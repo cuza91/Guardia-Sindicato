@@ -422,7 +422,7 @@ function generateGuardsFromDays() {
   saveData();
   refreshUI();
   alert(
-    `Se generaron ${newGuards.length} guardias para los días nuevos. Se conservaron ${existingGuardsForDays.length} guardias existentes.`,
+    `Se generaron ${newGuards.length} guardias para los días nuevos. Se conservaron ${existingGuardsForDays.length} dias de guardias existentes.`,
   );
 }
 
