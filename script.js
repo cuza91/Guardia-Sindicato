@@ -382,7 +382,7 @@ function addGuardDay() {
   alert("Día añadido a la lista de guardias.");
 }
 
-// Generar guardias SOLO en los días definidos, con rotación continua
+// Generar guardias SOLO para los días NUEVOS que no tengan guardia asignada
 function generateGuardsFromDays() {
   if (workers.length === 0) {
     alert("No hay trabajadores. Añade al menos uno.");
@@ -392,12 +392,30 @@ function generateGuardsFromDays() {
     alert("No hay días definidos. Añade días de guardia primero.");
     return;
   }
+
   const sortedDays = [...guardDays].sort();
+
+  // Separar los días que ya tienen guardia de los que no
+  const existingGuardsForDays = guards.filter((g) =>
+    guardDays.includes(g.date),
+  );
+  const existingDates = new Set(existingGuardsForDays.map((g) => g.date));
+  const newDays = sortedDays.filter((date) => !existingDates.has(date));
+
+  if (newDays.length === 0) {
+    alert("Todos los días ya tienen guardia asignada. No hay días nuevos.");
+    return;
+  }
+
+  // Conservar todas las guardias existentes (no se tocan)
   const otherGuards = guards.filter((g) => !guardDays.includes(g.date));
+
+  // Generar nuevas guardias solo para los días nuevos, continuando la rotación
   const newGuards = [];
   let workerIndex = lastWorkerIndexForDays;
   let maxId = guards.length > 0 ? Math.max(...guards.map((g) => g.id)) : 0;
-  for (const date of sortedDays) {
+
+  for (const date of newDays) {
     const worker = workers[workerIndex % workers.length];
     newGuards.push({
       id: ++maxId,
@@ -407,14 +425,19 @@ function generateGuardsFromDays() {
     });
     workerIndex++;
   }
+
+  // Actualizar el último índice usado (para la próxima vez)
   lastWorkerIndexForDays = workerIndex % workers.length;
-  const combined = [...otherGuards, ...newGuards];
+
+  // Combinar: guardias existentes (incluyendo las de días ya cubiertos) + las nuevas
+  const combined = [...otherGuards, ...existingGuardsForDays, ...newGuards];
   combined.sort((a, b) => a.date.localeCompare(b.date));
   guards = combined;
+
   saveData();
   refreshUI();
   alert(
-    `Guardias generadas para ${newGuards.length} días definidos. Se conservaron ${otherGuards.length} guardias de otras fechas.`,
+    `Se generaron ${newGuards.length} guardias para los días nuevos. Se conservaron ${existingGuardsForDays.length} guardias existentes.`,
   );
 }
 
