@@ -27,7 +27,7 @@
         <div class="config-grid">
           <!-- Trabajadores -->
           <div class="config-block">
-            <h3>👥 Trabajadores</h3>
+            <h3>👥Listado de Trabajadores</h3>
             <div class="form-row">
               <input
                 type="text"
@@ -46,9 +46,21 @@
             </div>
             <div id="workersList" class="items-list"></div>
             <div class="form-row">
-              <button id="exportWorkersBtn" class="btn outline small">📤 Exportar Trabajadores</button>
-              <label for="importWorkersInput" class="btn outline small" style="cursor: pointer">📥 Importar Trabajadores</label>
-              <input type="file" id="importWorkersInput" accept=".json" style="display: none" />
+              <button id="exportWorkersBtn" class="btn outline small">
+                <strong>📤 Exportar Trabajadores</strong>
+              </button>
+              <label
+                for="importWorkersInput"
+                class="btn outline small"
+                style="cursor: pointer"
+                >📥 Importar Trabajadores</label
+              >
+              <input
+                type="file"
+                id="importWorkersInput"
+                accept=".json"
+                style="display: none"
+              />
             </div>
             <small
               >⚡ Si cambias la lista de trabajadores, deberás regenerar las
@@ -58,14 +70,14 @@
 
           <!-- Días de Guardia Definidos -->
           <div class="config-block">
-            <h3>📆 Días de Guardia</h3>
+            <h3>📆 Listado de Días de Guardia</h3>
             <div class="form-row">
               <input type="date" id="newGuardDay" value="2026-01-01" />
               <button id="addGuardDayBtn" class="btn primary">
                 ➕ Añadir día
               </button>
               <button id="generateFromDaysBtn" class="btn success">
-                🎯 Generar Guardias
+                🎯 Generar Guardias (Dias Seleccionados)
               </button>
             </div>
             <div id="guardDaysList" class="items-list">
@@ -98,7 +110,7 @@
 
       <!-- CARD 2: ACCIONES (Planificación, generación, import/export completa) -->
       <section class="card actions-card">
-        <h2>⚡ Acciones</h2>
+        <h2>⚡ Generar Guardias</h2>
         <div class="actions-grid">
           <div class="action-group">
             <label for="yearSelect">Año:</label>
@@ -111,25 +123,25 @@
               style="width: 100px"
             />
             <button id="generateBtn" class="btn success">
-              🔄 Generar guardias (todos laborables)
+              🔄 Generar Guardias Automaticamente (Todo el Año)
             </button>
             <button id="addManualGuardBtn" class="btn primary">
-              ➕ Asignar manual
+              ➕ Generar Guardia de Forma Manual
             </button>
           </div>
           <div class="action-group">
             <button id="exportDataBtn" class="btn outline">
-              💾 Exportar datos completos (JSON)
+              💾 Exportar Datos
             </button>
-            <button id="exportCsvBtn" class="btn outline">
+            <!-- <button id="exportCsvBtn" class="btn outline">
               📎 Exportar guardias a CSV
-            </button>
+            </button> -->
             <label
               for="importFileInput"
               class="btn outline"
               style="cursor: pointer"
-              >📂 Importar datos (JSON)</label
-            >
+              >📂 Importar Datos
+            </label>
             <input
               type="file"
               id="importFileInput"
@@ -141,16 +153,15 @@
               class="btn outline small"
               style="border-color: #dc3545; color: #dc3545"
             >
-              ❌ Desmarcar todas
+              ❌ Desmarcar Todas las Guardias
             </button>
           </div>
         </div>
         <div class="info-bar">
           <span
             >📌 Los fines de semana no se generan automáticamente (puedes
-            añadirlos como días definidos o manualmente). Rotación por orden en
-            la lista.</span
-          >
+            añadirlos como días definidos o manualmente).
+          </span>
         </div>
       </section>
 
