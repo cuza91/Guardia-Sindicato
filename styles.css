@@ -462,6 +462,13 @@ td input[type="checkbox"] {
   color: #2a9d8f;
 }
 
+/* Ajuste del texto de porcentaje en resumen (CORRECCIÓN) */
+.stat-card .percent-text {
+  font-size: 0.9rem;
+  font-weight: normal;
+  color: #2a9d8f;
+}
+
 /* REMARCADO BOTONES PELIGRO */
 .btn.outline[style*="border-color:#dc3545"],
 .btn.outline[style*="color:#dc3545"] {

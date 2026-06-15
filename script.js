@@ -23,7 +23,7 @@ const STORAGE_DAYS = "sindicato_guardDays";
 const STORAGE_LAST_INDEX = "sindicato_lastIndexDays";
 
 let currentEditingGuard = null;
-let currentEditingDay = null; // para editar día definido
+let currentEditingDay = null;
 
 // ---------- FUNCIONES DE PERSISTENCIA ----------
 function saveData() {
@@ -96,7 +96,6 @@ function renderWorkersList() {
     });
   });
 
-  // ---------- ELIMINAR TRABAJADOR CON OPCIONES ----------
   document.querySelectorAll(".delete-worker").forEach((btn) => {
     btn.addEventListener("click", () => {
       const id = parseInt(btn.dataset.id);
@@ -238,7 +237,7 @@ function importWorkersFromJSON(file) {
           )
         ) {
           workers = [];
-          guards = []; // Al no haber trabajadores, las guardias quedarían huérfanas
+          guards = [];
           lastWorkerIndexForDays = 0;
           saveData();
           refreshUI();
@@ -246,15 +245,12 @@ function importWorkersFromJSON(file) {
         }
         return;
       }
-      // Validar estructura básica
       if (!newWorkers.every((w) => w.id && typeof w.name === "string")) {
         throw new Error(
           'Algún trabajador no tiene los campos "id" y "name" válidos.',
         );
       }
-      // Reemplazar trabajadores
       workers = newWorkers;
-      // Limpiar guardias y contador de rotación para evitar inconsistencias
       guards = [];
       lastWorkerIndexForDays = 0;
       saveData();
@@ -279,7 +275,7 @@ function handleImportWorkers(event) {
   ) {
     importWorkersFromJSON(file);
   }
-  event.target.value = ""; // permitir importar el mismo archivo otra vez
+  event.target.value = "";
 }
 
 // ---------- DÍAS DE GUARDIA (CRUD + rotación continua) ----------
@@ -302,7 +298,6 @@ function renderGuardDaysList() {
                         <button class="remove-day" data-date="${day}">✖️</button>`;
     container.appendChild(tag);
   }
-  // Eliminar día
   document.querySelectorAll(".remove-day").forEach((btn) => {
     btn.addEventListener("click", (e) => {
       const date = btn.dataset.date;
@@ -322,7 +317,6 @@ function renderGuardDaysList() {
       }
     });
   });
-  // Editar día
   document.querySelectorAll(".edit-day").forEach((btn) => {
     btn.addEventListener("click", (e) => {
       const oldDate = btn.dataset.date;
@@ -382,7 +376,6 @@ function addGuardDay() {
   alert("Día añadido a la lista de guardias.");
 }
 
-// Generar guardias SOLO para los días NUEVOS que no tengan guardia asignada
 function generateGuardsFromDays() {
   if (workers.length === 0) {
     alert("No hay trabajadores. Añade al menos uno.");
@@ -394,8 +387,6 @@ function generateGuardsFromDays() {
   }
 
   const sortedDays = [...guardDays].sort();
-
-  // Separar los días que ya tienen guardia de los que no
   const existingGuardsForDays = guards.filter((g) =>
     guardDays.includes(g.date),
   );
@@ -407,10 +398,7 @@ function generateGuardsFromDays() {
     return;
   }
 
-  // Conservar todas las guardias existentes (no se tocan)
   const otherGuards = guards.filter((g) => !guardDays.includes(g.date));
-
-  // Generar nuevas guardias solo para los días nuevos, continuando la rotación
   const newGuards = [];
   let workerIndex = lastWorkerIndexForDays;
   let maxId = guards.length > 0 ? Math.max(...guards.map((g) => g.id)) : 0;
@@ -426,10 +414,7 @@ function generateGuardsFromDays() {
     workerIndex++;
   }
 
-  // Actualizar el último índice usado (para la próxima vez)
   lastWorkerIndexForDays = workerIndex % workers.length;
-
-  // Combinar: guardias existentes (incluyendo las de días ya cubiertos) + las nuevas
   const combined = [...otherGuards, ...existingGuardsForDays, ...newGuards];
   combined.sort((a, b) => a.date.localeCompare(b.date));
   guards = combined;
@@ -441,7 +426,6 @@ function generateGuardsFromDays() {
   );
 }
 
-// Exportar SOLO los días definidos a JSON
 function exportDaysToJSON() {
   if (guardDays.length === 0) {
     alert("No hay días definidos para exportar.");
@@ -477,15 +461,14 @@ function importDaysFromJSON(file) {
   reader.readAsText(file);
 }
 
-// ---------- GENERACIÓN AUTOMÁTICA TRADICIONAL (todos laborables) ----------
+// ---------- GENERACIÓN AUTOMÁTICA POR AÑO (MULTI-AÑO) ----------
 function generateGuardsForYear(year) {
   if (workers.length === 0) return [];
   const newGuards = [];
-  let guardId = 1;
+  let workerIndex = 0;
   const startDate = new Date(year, 0, 1);
   const endDate = new Date(year, 11, 31);
   let dayPointer = new Date(startDate);
-  let workerIndex = 0;
 
   while (dayPointer <= endDate) {
     const dayOfWeek = dayPointer.getDay();
@@ -494,7 +477,7 @@ function generateGuardsForYear(year) {
       const worker = workers[workerIndex % workers.length];
       const formattedDate = `${dayPointer.getFullYear()}-${String(dayPointer.getMonth() + 1).padStart(2, "0")}-${String(dayPointer.getDate()).padStart(2, "0")}`;
       newGuards.push({
-        id: guardId++,
+        id: 0, // temporal
         date: formattedDate,
         workerId: worker.id,
         completed: false,
@@ -513,30 +496,34 @@ function regenerateGuards() {
   }
   const year = parseInt(document.getElementById("yearSelect").value);
   currentYear = year;
-  // Conservar guardias de fines de semana
-  const weekendGuards = guards.filter((g) => {
-    const date = new Date(g.date);
-    const day = date.getDay();
-    return day === 0 || day === 6;
+
+  // Eliminar solo las guardias del año seleccionado (no todas)
+  guards = guards.filter((g) => {
+    const guardYear = parseInt(g.date.split("-")[0]);
+    return guardYear !== year;
   });
-  const newLaborableGuards = generateGuardsForYear(currentYear);
-  const combined = [...newLaborableGuards];
-  for (const wg of weekendGuards) {
-    if (!combined.some((g) => g.date === wg.date)) combined.push(wg);
-  }
-  combined.sort((a, b) => a.date.localeCompare(b.date));
-  combined.forEach((g, idx) => {
-    g.id = idx + 1;
+
+  // Generar nuevas guardias para el año
+  const newGuards = generateGuardsForYear(year);
+
+  // Asignar IDs secuenciales globales
+  let maxId = guards.length > 0 ? Math.max(...guards.map((g) => g.id)) : 0;
+  newGuards.forEach((g) => {
+    g.id = ++maxId;
   });
-  guards = combined;
+
+  // Combinar guardias existentes (de otros años) con las nuevas
+  guards = [...guards, ...newGuards];
+  guards.sort((a, b) => a.date.localeCompare(b.date));
+
   saveData();
   refreshUI();
   alert(
-    `Guardias regeneradas para ${currentYear}. Días laborables: ${newLaborableGuards.length}`,
+    `Guardias generadas para ${year}. Total de días laborables: ${newGuards.length}. Se conservaron guardias de otros años.`,
   );
 }
 
-// ---------- GUARDIAS MANUALES ----------
+// ---------- GUARDIAS MANUALES (MULTI-AÑO) ----------
 function openManualModal() {
   if (workers.length === 0) {
     alert("Primero añade trabajadores.");
@@ -563,19 +550,11 @@ function saveManualGuard() {
     alert("Selecciona una fecha.");
     return;
   }
-  const year = parseInt(fechaStr.split("-")[0]);
-  if (year !== currentYear) {
-    if (confirm(`La fecha es de ${year}. ¿Cambiar año y regenerar?`)) {
-      document.getElementById("yearSelect").value = year;
-      currentYear = year;
-      regenerateGuards();
-      closeManualModal();
-    }
-    return;
-  }
   const existing = guards.find((g) => g.date === fechaStr);
   if (existing) {
-    if (confirm(`Ya existe guardia el ${fechaStr}. ¿Sobrescribir?`)) {
+    if (
+      confirm(`Ya existe guardia el ${formatDate(fechaStr)}. ¿Sobrescribir?`)
+    ) {
       existing.workerId = workerId;
       existing.completed = false;
       saveData();
@@ -674,7 +653,7 @@ function renderGuardsTablePage() {
   const pageGuards = currentFilteredGuards.slice(start, start + rowsPerPage);
   if (pageGuards.length === 0) {
     tbody.innerHTML =
-      '<tr><td colspan="4">No hay guardias que coincidan con los filtros.</td></tr>';
+      '<tr><td colspan="4">No hay guardias que coincidan con los filtros.</td>';
     renderPaginationControls(0);
     return;
   }
@@ -892,7 +871,7 @@ function changeMonth(delta) {
   renderCalendar();
 }
 
-// ---------- RESUMEN Y ESTADÍSTICAS ----------
+// ---------- RESUMEN Y ESTADÍSTICAS (con "completado" por trabajador) ----------
 function renderSummary() {
   const container = document.getElementById("summaryStats");
   if (!container) return;
@@ -923,13 +902,21 @@ function renderSummary() {
   }
   const totalGuards = guards.length;
   const completedGuards = guards.filter((g) => g.completed).length;
-  let html = `<div class="stat-card" style="background:#e6f7f0;"><h3>📊 Guardias Totales </h3><p>${completedGuards}/${totalGuards}</p><p>${Math.round((completedGuards / totalGuards) * 100)}% completado</p></div>`;
+  let html = `<div class="stat-card" style="background:#e6f7f0;">
+                <h3>📊 Guardias Totales</h3>
+                <p>${completedGuards}/${totalGuards}</p>
+                <p class="percent-text">${Math.round((completedGuards / totalGuards) * 100)}% completado</p>
+              </div>`;
   for (const w of filteredWorkers) {
     const wg = guards.filter((g) => g.workerId === w.id);
     const assigned = wg.length;
     const completed = wg.filter((g) => g.completed).length;
     const percent = assigned ? Math.round((completed / assigned) * 100) : 0;
-    html += `<div class="stat-card"><h3>👤 ${escapeHtml(w.name)}</h3><p>${completed}/${assigned}</p><div class="progress">${percent}%</div></div>`;
+    html += `<div class="stat-card">
+              <h3>👤 ${escapeHtml(w.name)}</h3>
+              <p>${completed}/${assigned}</p>
+              <div class="progress">${percent}% completado</div>
+            </div>`;
   }
   container.innerHTML = html;
 }
@@ -1203,7 +1190,6 @@ function bindEvents() {
     if (e.key === "Enter") addWorker();
   });
 
-  // Nuevos eventos para exportar/importar trabajadores
   document
     .getElementById("exportWorkersBtn")
     ?.addEventListener("click", exportWorkers);
