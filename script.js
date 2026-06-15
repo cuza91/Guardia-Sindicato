@@ -176,6 +176,77 @@ function addWorker() {
     alert('Trabajador añadido.');
 }
 
+// ---------- EXPORTAR / IMPORTAR TRABAJADORES ----------
+function exportWorkers() {
+    if (workers.length === 0) {
+        alert('No hay trabajadores para exportar.');
+        return;
+    }
+    const exportObj = {
+        workers: workers,
+        exportDate: new Date().toISOString()
+    };
+    const blob = new Blob([JSON.stringify(exportObj, null, 2)], {type: 'application/json'});
+    const a = document.createElement('a');
+    const today = new Date().toISOString().split('T')[0];
+    a.download = `trabajadores_${today}.json`;
+    a.href = URL.createObjectURL(blob);
+    a.click();
+    URL.revokeObjectURL(a.href);
+}
+
+function importWorkersFromJSON(file) {
+    const reader = new FileReader();
+    reader.onload = e => {
+        try {
+            const data = JSON.parse(e.target.result);
+            let newWorkers = null;
+            if (Array.isArray(data)) {
+                newWorkers = data;
+            } else if (data.workers && Array.isArray(data.workers)) {
+                newWorkers = data.workers;
+            } else {
+                throw new Error('Formato inválido: se esperaba un array de trabajadores o un objeto con propiedad "workers".');
+            }
+            if (newWorkers.length === 0) {
+                if (confirm('El archivo no contiene trabajadores. ¿Deseas borrar todos los trabajadores actuales?')) {
+                    workers = [];
+                    guards = [];  // Al no haber trabajadores, las guardias quedarían huérfanas
+                    lastWorkerIndexForDays = 0;
+                    saveData();
+                    refreshUI();
+                    alert('Todos los trabajadores y guardias han sido eliminados.');
+                }
+                return;
+            }
+            // Validar estructura básica
+            if (!newWorkers.every(w => w.id && typeof w.name === 'string')) {
+                throw new Error('Algún trabajador no tiene los campos "id" y "name" válidos.');
+            }
+            // Reemplazar trabajadores
+            workers = newWorkers;
+            // Limpiar guardias y contador de rotación para evitar inconsistencias
+            guards = [];
+            lastWorkerIndexForDays = 0;
+            saveData();
+            refreshUI();
+            alert(`Se importaron ${workers.length} trabajadores. Las guardias existentes se han eliminado para mantener la coherencia. Puedes regenerar las guardias desde los días definidos o con la generación automática.`);
+        } catch(err) {
+            alert('Error al importar: ' + err.message);
+        }
+    };
+    reader.readAsText(file);
+}
+
+function handleImportWorkers(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    if (confirm('Al importar trabajadores se reemplazará la lista actual y se borrarán TODAS las guardias existentes (se conservarán los días definidos). ¿Continuar?')) {
+        importWorkersFromJSON(file);
+    }
+    event.target.value = ''; // permitir importar el mismo archivo otra vez
+}
+
 // ---------- DÍAS DE GUARDIA (CRUD + rotación continua) ----------
 function renderGuardDaysList() {
     const container = document.getElementById('guardDaysList');
@@ -500,7 +571,7 @@ function renderGuardsTablePage() {
     const start = (currentPage-1)*rowsPerPage;
     const pageGuards = currentFilteredGuards.slice(start, start+rowsPerPage);
     if (pageGuards.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="4">No hay guardias que coincidan con los filtros.</td</tr>';
+        tbody.innerHTML = '<tr><td colspan="4">No hay guardias que coincidan con los filtros.</td></tr>';
         renderPaginationControls(0);
         return;
     }
@@ -872,6 +943,10 @@ function bindEvents() {
         if(e.target === document.getElementById('editDayModal')) closeDayModal();
     });
     document.getElementById('workerName')?.addEventListener('keypress', e => { if(e.key==='Enter') addWorker(); });
+    
+    // Nuevos eventos para exportar/importar trabajadores
+    document.getElementById('exportWorkersBtn')?.addEventListener('click', exportWorkers);
+    document.getElementById('importWorkersInput')?.addEventListener('change', handleImportWorkers);
 }
 
 // ---------- INICIALIZACIÓN ----------
