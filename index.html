@@ -224,6 +224,9 @@
             <select id="filterWorker" style="flex: 2">
               <option value="all">Trabajador</option>
             </select>
+            <select id="filterCatedra" style="flex: 2">
+              <option value="all">Cátedra</option>
+            </select>
             <button id="clearFiltersBtn" class="btn outline">🗑️ Limpiar</button>
           </div>
         </div>
@@ -237,13 +240,14 @@
                   <th>Fecha</th>
                   <th>Trabajador</th>
                   <th>Realizada</th>
+                  <th>Cátedra</th>
                   <th>Notas</th>
                   <th>Acciones</th>
                 </tr>
               </thead>
               <tbody id="guardsTableBody">
                 <tr>
-                  <td colspan="5">No hay guardias. Genera o importa datos.</td>
+                  <td colspan="6">No hay guardias. Genera o importa datos.</td>
                 </tr>
               </tbody>
             </table>
@@ -307,6 +311,10 @@
           <input type="checkbox" id="editCompleted" />
         </div>
         <div class="form-group">
+          <label>🏛️ Cátedra:</label>
+          <input type="text" id="editCatedra" placeholder="Ej: Matemáticas" />
+        </div>
+        <div class="form-group">
           <label>📝 Notas:</label>
           <input type="text" id="editNotes" placeholder="Ej: Mañana, tarde, sustitución..." />
         </div>
@@ -317,7 +325,7 @@
       </div>
     </div>
 
-    <!-- MODAL AÑADIR MANUAL (CON BUSCADOR) -->
+    <!-- MODAL AÑADIR MANUAL -->
     <div id="manualModal" class="modal" style="display: none">
       <div class="modal-content">
         <span class="close-manual">&times;</span>
@@ -343,6 +351,10 @@
             style="height: auto; min-height: 120px"
           ></select>
           <small>💡 Haz clic en el nombre para seleccionarlo</small>
+        </div>
+        <div class="form-group">
+          <label>🏛️ Cátedra:</label>
+          <input type="text" id="manualCatedra" placeholder="Opcional" />
         </div>
         <div class="form-group">
           <label>📝 Notas:</label>

@@ -53,6 +53,7 @@ function loadData() {
   document.getElementById("yearSelect").value = currentYear;
   updateFilterWorkerSelect();
   updateFilterYearSelect();
+  updateFilterCatedraSelect();
 }
 
 // ---------- UTILS ----------
@@ -314,7 +315,7 @@ function generateGuardsFromDays() {
   let maxId = guards.length ? Math.max(...guards.map(g => g.id)) : 0;
   for (const date of newDays) {
     const worker = workers[workerIndex % workers.length];
-    newGuards.push({ id: ++maxId, date, workerId: worker.id, completed: false, notes: '' });
+    newGuards.push({ id: ++maxId, date, workerId: worker.id, completed: false, catedra: '', notes: '' });
     workerIndex++;
   }
   lastWorkerIndexForDays = workerIndex % workers.length;
@@ -364,7 +365,7 @@ function generateGuardsForYear(year) {
     if (dayOfWeek !== 0 && dayOfWeek !== 6) {
       const worker = workers[workerIndex % workers.length];
       const formatted = `${current.getFullYear()}-${String(current.getMonth()+1).padStart(2,'0')}-${String(current.getDate()).padStart(2,'0')}`;
-      newGuards.push({ id: 0, date: formatted, workerId: worker.id, completed: false, notes: '' });
+      newGuards.push({ id: 0, date: formatted, workerId: worker.id, completed: false, catedra: '', notes: '' });
       workerIndex++;
     }
     current.setDate(current.getDate() + 1);
@@ -394,6 +395,7 @@ function openManualModal() {
   if (searchInput) searchInput.value = "";
   renderWorkerSelectForManual("");
   document.getElementById("manualDate").value = new Date().toISOString().split("T")[0];
+  document.getElementById("manualCatedra").value = "";
   document.getElementById("manualNotes").value = "";
   document.getElementById("manualModal").style.display = "flex";
   setTimeout(() => searchInput && searchInput.focus(), 100);
@@ -424,6 +426,7 @@ function saveManualGuard() {
   const fechaStr = document.getElementById("manualDate").value;
   const workerSelect = document.getElementById("manualWorker");
   const workerId = parseInt(workerSelect.value);
+  const catedra = document.getElementById("manualCatedra").value.trim();
   const notes = document.getElementById("manualNotes").value.trim();
   if (!fechaStr || isNaN(workerId)) return alert("Selecciona fecha y trabajador.");
   const existing = guards.find(g => g.date === fechaStr);
@@ -431,6 +434,7 @@ function saveManualGuard() {
     if (confirm(`Ya existe guardia el ${formatDate(fechaStr)}. ¿Sobrescribir?`)) {
       existing.workerId = workerId;
       existing.completed = false;
+      existing.catedra = catedra;
       existing.notes = notes;
       saveData();
       refreshUI();
@@ -439,7 +443,7 @@ function saveManualGuard() {
     }
   } else {
     const maxId = guards.length ? Math.max(...guards.map(g => g.id)) : 0;
-    guards.push({ id: maxId + 1, date: fechaStr, workerId, completed: false, notes: notes });
+    guards.push({ id: maxId + 1, date: fechaStr, workerId, completed: false, catedra, notes });
     guards.sort((a,b) => a.date.localeCompare(b.date));
     saveData();
     refreshUI();
@@ -471,6 +475,7 @@ function sortGuards(guardsArray) {
         valB = wb ? wb.name : '';
         break;
       case 'completed': valA = a.completed ? 1 : 0; valB = b.completed ? 1 : 0; break;
+      case 'catedra': valA = (a.catedra || '').toLowerCase(); valB = (b.catedra || '').toLowerCase(); break;
       case 'notes': valA = (a.notes || '').toLowerCase(); valB = (b.notes || '').toLowerCase(); break;
       default: return 0;
     }
@@ -486,11 +491,13 @@ function applyFiltersAndRenderTable() {
   const filterMonth = document.getElementById("filterMonth")?.value || "all";
   const filterYear = document.getElementById("filterYear")?.value || "all";
   const filterWorker = document.getElementById("filterWorker")?.value || "all";
+  const filterCatedra = document.getElementById("filterCatedra")?.value || "all";
   let filtered = [...guards];
   if (filterDay !== "all") filtered = filtered.filter(g => parseInt(g.date.split("-")[2]) === parseInt(filterDay));
   if (filterMonth !== "all") filtered = filtered.filter(g => parseInt(g.date.split("-")[1]) === parseInt(filterMonth));
   if (filterYear !== "all") filtered = filtered.filter(g => parseInt(g.date.split("-")[0]) === parseInt(filterYear));
   if (filterWorker !== "all") filtered = filtered.filter(g => g.workerId === parseInt(filterWorker));
+  if (filterCatedra !== "all") filtered = filtered.filter(g => (g.catedra || '') === filterCatedra);
   filtered = sortGuards(filtered);
   currentFilteredGuards = filtered;
   currentPage = 1;
@@ -504,7 +511,7 @@ function renderGuardsTablePage() {
   const start = (currentPage - 1) * rowsPerPage;
   const pageGuards = currentFilteredGuards.slice(start, start + rowsPerPage);
   if (!pageGuards.length) {
-    tbody.innerHTML = '<tr><td colspan="5">No hay guardias que coincidan.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="6">No hay guardias que coincidan.</td></tr>';
     renderPaginationControls(0);
     return;
   }
@@ -526,19 +533,20 @@ function renderGuardsTablePage() {
       applyFiltersAndRenderTable();
     });
     chkCell.appendChild(chk);
+    // Cátedra
+    row.insertCell(3).textContent = guard.catedra || '';
     // Notas
-    const notesCell = row.insertCell(3);
+    const notesCell = row.insertCell(4);
     if (guard.notes) {
       const icon = document.createElement("span");
       icon.textContent = "📝";
       icon.title = guard.notes;
       notesCell.appendChild(icon);
-      // Opcional: mostrar texto completo en tooltip
     } else {
       notesCell.textContent = "";
     }
     // Acciones
-    const actionsCell = row.insertCell(4);
+    const actionsCell = row.insertCell(5);
     const editBtn = document.createElement("button");
     editBtn.textContent = "✏️ Editar";
     editBtn.className = "btn-edit";
@@ -580,7 +588,7 @@ function renderPaginationControls(totalPages) {
 
 function updateSortIndicators() {
   const headers = document.querySelectorAll('#guardsTable th');
-  if (headers.length < 4) return;
+  if (headers.length < 5) return;
   const setArrow = (th, active) => {
     if (!th) return;
     const arrow = currentSortOrder === 'asc' ? ' ▲' : ' ▼';
@@ -590,13 +598,14 @@ function updateSortIndicators() {
   setArrow(headers[0], currentSortColumn === 'date');
   setArrow(headers[1], currentSortColumn === 'worker');
   setArrow(headers[2], currentSortColumn === 'completed');
-  setArrow(headers[3], currentSortColumn === 'notes');
+  setArrow(headers[3], currentSortColumn === 'catedra');
+  setArrow(headers[4], currentSortColumn === 'notes');
 }
 
 function bindSortingEvents() {
   const headers = document.querySelectorAll('#guardsTable th');
-  if (headers.length < 4) return;
-  const columns = ['date', 'worker', 'completed', 'notes'];
+  if (headers.length < 5) return;
+  const columns = ['date', 'worker', 'completed', 'catedra', 'notes'];
   headers.forEach((th, index) => {
     th.addEventListener('click', () => {
       const col = columns[index];
@@ -625,6 +634,7 @@ function openEditModal(guard) {
   const dateInput = document.getElementById("editDate");
   const workerSelect = document.getElementById("editWorker");
   const completedCheck = document.getElementById("editCompleted");
+  const catedraInput = document.getElementById("editCatedra");
   const notesInput = document.getElementById("editNotes");
   workerSelect.innerHTML = "";
   workers.forEach(w => {
@@ -636,6 +646,7 @@ function openEditModal(guard) {
   });
   dateInput.value = guard.date;
   completedCheck.checked = guard.completed;
+  catedraInput.value = guard.catedra || '';
   notesInput.value = guard.notes || '';
   modal.style.display = "flex";
 }
@@ -645,6 +656,7 @@ function saveEditGuard() {
   const newDate = document.getElementById("editDate").value;
   const newWorkerId = parseInt(document.getElementById("editWorker").value);
   const newCompleted = document.getElementById("editCompleted").checked;
+  const newCatedra = document.getElementById("editCatedra").value.trim();
   const newNotes = document.getElementById("editNotes").value.trim();
   if (!newDate) return alert("Selecciona fecha");
   if (newDate !== currentEditingGuard.date) {
@@ -661,6 +673,7 @@ function saveEditGuard() {
   }
   currentEditingGuard.workerId = newWorkerId;
   currentEditingGuard.completed = newCompleted;
+  currentEditingGuard.catedra = newCatedra;
   currentEditingGuard.notes = newNotes;
   saveData();
   closeModal();
@@ -767,7 +780,7 @@ function importFromJSON(file) {
       const data = JSON.parse(e.target.result);
       if (!data.workers || !data.guards || data.currentYear === undefined) throw new Error("Formato inválido");
       workers = data.workers;
-      guards = data.guards.map(g => ({ ...g, notes: g.notes || '' })); // asegurar campo notes
+      guards = data.guards.map(g => ({ ...g, catedra: g.catedra || '', notes: g.notes || '' }));
       currentYear = data.currentYear;
       guardDays = data.guardDays || [];
       lastWorkerIndexForDays = data.lastWorkerIndexForDays || 0;
@@ -782,10 +795,10 @@ function importFromJSON(file) {
 
 function exportToCSV() {
   if (!guards.length) return alert("No hay guardias.");
-  const rows = [["Fecha","Trabajador","Realizada","Notas"]];
+  const rows = [["Fecha","Trabajador","Realizada","Cátedra","Notas"]];
   [...guards].sort((a,b)=>a.date.localeCompare(b.date)).forEach(g => {
     const worker = workers.find(w => w.id === g.workerId);
-    rows.push([formatDate(g.date), worker ? worker.name : "Desconocido", g.completed ? "Sí" : "No", g.notes || ""]);
+    rows.push([formatDate(g.date), worker ? worker.name : "Desconocido", g.completed ? "Sí" : "No", g.catedra || "", g.notes || ""]);
   });
   const csv = rows.map(r => r.join(",")).join("\n");
   const blob = new Blob(["\uFEFF"+csv], { type: "text/csv;charset=utf-8;" });
@@ -862,6 +875,27 @@ function updateFilterYearSelect() {
   select.value = currentVal !== "all" && years.includes(parseInt(currentVal)) ? currentVal : "all";
 }
 
+function updateFilterCatedraSelect() {
+  const select = document.getElementById("filterCatedra");
+  if (!select) return;
+  const currentVal = select.value;
+  // Obtener valores únicos de cátedra (excluyendo vacío)
+  const valores = [...new Set(guards.map(g => g.catedra).filter(c => c && c.trim() !== ''))].sort();
+  select.innerHTML = '<option value="all">Todas las cátedras</option>';
+  valores.forEach(c => {
+    const opt = document.createElement("option");
+    opt.value = c;
+    opt.textContent = c;
+    select.appendChild(opt);
+  });
+  // Restaurar selección si aún existe
+  if (currentVal !== "all" && valores.includes(currentVal)) {
+    select.value = currentVal;
+  } else {
+    select.value = "all";
+  }
+}
+
 function refreshUI() {
   renderWorkersList();
   renderGuardDaysList();
@@ -872,6 +906,7 @@ function refreshUI() {
   renderSummary();
   updateFilterWorkerSelect();
   updateFilterYearSelect();
+  updateFilterCatedraSelect();
   document.getElementById("yearSelect").value = currentYear;
 }
 
@@ -894,12 +929,14 @@ function bindEvents() {
     document.getElementById("filterMonth").value = "all";
     document.getElementById("filterYear").value = "all";
     document.getElementById("filterWorker").value = "all";
+    document.getElementById("filterCatedra").value = "all";
     applyFiltersAndRenderTable();
   });
   document.getElementById("filterDay")?.addEventListener("change", applyFiltersAndRenderTable);
   document.getElementById("filterMonth")?.addEventListener("change", applyFiltersAndRenderTable);
   document.getElementById("filterYear")?.addEventListener("change", applyFiltersAndRenderTable);
   document.getElementById("filterWorker")?.addEventListener("change", applyFiltersAndRenderTable);
+  document.getElementById("filterCatedra")?.addEventListener("change", applyFiltersAndRenderTable);
   document.getElementById("summaryFilter")?.addEventListener("change", renderSummary);
   document.getElementById("tableViewBtn")?.addEventListener("click", () => setView("table"));
   document.getElementById("calendarViewBtn")?.addEventListener("click", () => setView("calendar"));
