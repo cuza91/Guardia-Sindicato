@@ -314,7 +314,7 @@ function generateGuardsFromDays() {
   let maxId = guards.length ? Math.max(...guards.map(g => g.id)) : 0;
   for (const date of newDays) {
     const worker = workers[workerIndex % workers.length];
-    newGuards.push({ id: ++maxId, date, workerId: worker.id, completed: false });
+    newGuards.push({ id: ++maxId, date, workerId: worker.id, completed: false, notes: '' });
     workerIndex++;
   }
   lastWorkerIndexForDays = workerIndex % workers.length;
@@ -364,7 +364,7 @@ function generateGuardsForYear(year) {
     if (dayOfWeek !== 0 && dayOfWeek !== 6) {
       const worker = workers[workerIndex % workers.length];
       const formatted = `${current.getFullYear()}-${String(current.getMonth()+1).padStart(2,'0')}-${String(current.getDate()).padStart(2,'0')}`;
-      newGuards.push({ id: 0, date: formatted, workerId: worker.id, completed: false });
+      newGuards.push({ id: 0, date: formatted, workerId: worker.id, completed: false, notes: '' });
       workerIndex++;
     }
     current.setDate(current.getDate() + 1);
@@ -394,6 +394,7 @@ function openManualModal() {
   if (searchInput) searchInput.value = "";
   renderWorkerSelectForManual("");
   document.getElementById("manualDate").value = new Date().toISOString().split("T")[0];
+  document.getElementById("manualNotes").value = "";
   document.getElementById("manualModal").style.display = "flex";
   setTimeout(() => searchInput && searchInput.focus(), 100);
 }
@@ -423,12 +424,14 @@ function saveManualGuard() {
   const fechaStr = document.getElementById("manualDate").value;
   const workerSelect = document.getElementById("manualWorker");
   const workerId = parseInt(workerSelect.value);
+  const notes = document.getElementById("manualNotes").value.trim();
   if (!fechaStr || isNaN(workerId)) return alert("Selecciona fecha y trabajador.");
   const existing = guards.find(g => g.date === fechaStr);
   if (existing) {
     if (confirm(`Ya existe guardia el ${formatDate(fechaStr)}. ¿Sobrescribir?`)) {
       existing.workerId = workerId;
       existing.completed = false;
+      existing.notes = notes;
       saveData();
       refreshUI();
       alert("Guardia actualizada.");
@@ -436,7 +439,7 @@ function saveManualGuard() {
     }
   } else {
     const maxId = guards.length ? Math.max(...guards.map(g => g.id)) : 0;
-    guards.push({ id: maxId + 1, date: fechaStr, workerId, completed: false });
+    guards.push({ id: maxId + 1, date: fechaStr, workerId, completed: false, notes: notes });
     guards.sort((a,b) => a.date.localeCompare(b.date));
     saveData();
     refreshUI();
@@ -468,6 +471,7 @@ function sortGuards(guardsArray) {
         valB = wb ? wb.name : '';
         break;
       case 'completed': valA = a.completed ? 1 : 0; valB = b.completed ? 1 : 0; break;
+      case 'notes': valA = (a.notes || '').toLowerCase(); valB = (b.notes || '').toLowerCase(); break;
       default: return 0;
     }
     if (valA < valB) return currentSortOrder === 'asc' ? -1 : 1;
@@ -500,7 +504,7 @@ function renderGuardsTablePage() {
   const start = (currentPage - 1) * rowsPerPage;
   const pageGuards = currentFilteredGuards.slice(start, start + rowsPerPage);
   if (!pageGuards.length) {
-    tbody.innerHTML = '<tr><td colspan="4">No hay guardias que coincidan.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="5">No hay guardias que coincidan.</td></tr>';
     renderPaginationControls(0);
     return;
   }
@@ -522,7 +526,19 @@ function renderGuardsTablePage() {
       applyFiltersAndRenderTable();
     });
     chkCell.appendChild(chk);
-    const actionsCell = row.insertCell(3);
+    // Notas
+    const notesCell = row.insertCell(3);
+    if (guard.notes) {
+      const icon = document.createElement("span");
+      icon.textContent = "📝";
+      icon.title = guard.notes;
+      notesCell.appendChild(icon);
+      // Opcional: mostrar texto completo en tooltip
+    } else {
+      notesCell.textContent = "";
+    }
+    // Acciones
+    const actionsCell = row.insertCell(4);
     const editBtn = document.createElement("button");
     editBtn.textContent = "✏️ Editar";
     editBtn.className = "btn-edit";
@@ -564,7 +580,7 @@ function renderPaginationControls(totalPages) {
 
 function updateSortIndicators() {
   const headers = document.querySelectorAll('#guardsTable th');
-  if (headers.length < 3) return;
+  if (headers.length < 4) return;
   const setArrow = (th, active) => {
     if (!th) return;
     const arrow = currentSortOrder === 'asc' ? ' ▲' : ' ▼';
@@ -574,25 +590,20 @@ function updateSortIndicators() {
   setArrow(headers[0], currentSortColumn === 'date');
   setArrow(headers[1], currentSortColumn === 'worker');
   setArrow(headers[2], currentSortColumn === 'completed');
+  setArrow(headers[3], currentSortColumn === 'notes');
 }
 
 function bindSortingEvents() {
   const headers = document.querySelectorAll('#guardsTable th');
-  if (headers.length < 3) return;
-  headers[0].addEventListener('click', () => {
-    if (currentSortColumn === 'date') currentSortOrder = currentSortOrder === 'asc' ? 'desc' : 'asc';
-    else { currentSortColumn = 'date'; currentSortOrder = 'asc'; }
-    applyFiltersAndRenderTable();
-  });
-  headers[1].addEventListener('click', () => {
-    if (currentSortColumn === 'worker') currentSortOrder = currentSortOrder === 'asc' ? 'desc' : 'asc';
-    else { currentSortColumn = 'worker'; currentSortOrder = 'asc'; }
-    applyFiltersAndRenderTable();
-  });
-  headers[2].addEventListener('click', () => {
-    if (currentSortColumn === 'completed') currentSortOrder = currentSortOrder === 'asc' ? 'desc' : 'asc';
-    else { currentSortColumn = 'completed'; currentSortOrder = 'asc'; }
-    applyFiltersAndRenderTable();
+  if (headers.length < 4) return;
+  const columns = ['date', 'worker', 'completed', 'notes'];
+  headers.forEach((th, index) => {
+    th.addEventListener('click', () => {
+      const col = columns[index];
+      if (currentSortColumn === col) currentSortOrder = currentSortOrder === 'asc' ? 'desc' : 'asc';
+      else { currentSortColumn = col; currentSortOrder = 'asc'; }
+      applyFiltersAndRenderTable();
+    });
   });
 }
 
@@ -614,6 +625,7 @@ function openEditModal(guard) {
   const dateInput = document.getElementById("editDate");
   const workerSelect = document.getElementById("editWorker");
   const completedCheck = document.getElementById("editCompleted");
+  const notesInput = document.getElementById("editNotes");
   workerSelect.innerHTML = "";
   workers.forEach(w => {
     const opt = document.createElement("option");
@@ -624,6 +636,7 @@ function openEditModal(guard) {
   });
   dateInput.value = guard.date;
   completedCheck.checked = guard.completed;
+  notesInput.value = guard.notes || '';
   modal.style.display = "flex";
 }
 
@@ -632,6 +645,7 @@ function saveEditGuard() {
   const newDate = document.getElementById("editDate").value;
   const newWorkerId = parseInt(document.getElementById("editWorker").value);
   const newCompleted = document.getElementById("editCompleted").checked;
+  const newNotes = document.getElementById("editNotes").value.trim();
   if (!newDate) return alert("Selecciona fecha");
   if (newDate !== currentEditingGuard.date) {
     const existing = guards.find(g => g.date === newDate && g.id !== currentEditingGuard.id);
@@ -647,6 +661,7 @@ function saveEditGuard() {
   }
   currentEditingGuard.workerId = newWorkerId;
   currentEditingGuard.completed = newCompleted;
+  currentEditingGuard.notes = newNotes;
   saveData();
   closeModal();
   refreshUI();
@@ -752,7 +767,7 @@ function importFromJSON(file) {
       const data = JSON.parse(e.target.result);
       if (!data.workers || !data.guards || data.currentYear === undefined) throw new Error("Formato inválido");
       workers = data.workers;
-      guards = data.guards;
+      guards = data.guards.map(g => ({ ...g, notes: g.notes || '' })); // asegurar campo notes
       currentYear = data.currentYear;
       guardDays = data.guardDays || [];
       lastWorkerIndexForDays = data.lastWorkerIndexForDays || 0;
@@ -767,10 +782,10 @@ function importFromJSON(file) {
 
 function exportToCSV() {
   if (!guards.length) return alert("No hay guardias.");
-  const rows = [["Fecha","Trabajador","Realizada"]];
+  const rows = [["Fecha","Trabajador","Realizada","Notas"]];
   [...guards].sort((a,b)=>a.date.localeCompare(b.date)).forEach(g => {
     const worker = workers.find(w => w.id === g.workerId);
-    rows.push([formatDate(g.date), worker ? worker.name : "Desconocido", g.completed ? "Sí" : "No"]);
+    rows.push([formatDate(g.date), worker ? worker.name : "Desconocido", g.completed ? "Sí" : "No", g.notes || ""]);
   });
   const csv = rows.map(r => r.join(",")).join("\n");
   const blob = new Blob(["\uFEFF"+csv], { type: "text/csv;charset=utf-8;" });
