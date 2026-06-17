@@ -399,7 +399,6 @@ td input[type="checkbox"] {
   transform: translateY(-1px);
 }
 
-/* Notas columna más compacta */
 td:nth-child(5) {
   text-align: center;
   font-size: 1.2rem;
@@ -494,6 +493,7 @@ td:nth-child(5) {
   text-align: center;
   font-weight: 500;
   word-break: break-word;
+  margin-top: 1px;
 }
 
 .calendar-day-guard.completed {
@@ -648,7 +648,6 @@ td:nth-child(5) {
   width: 100%;
 }
 
-/* Estilo especial para el select del modal manual */
 #manualWorker {
   width: 100%;
   padding: 0.5rem;
@@ -748,7 +747,6 @@ td:nth-child(5) {
   }
 }
 
-/* Additional small tweaks */
 small {
   font-size: 0.7rem;
   color: var(--gray-600);
