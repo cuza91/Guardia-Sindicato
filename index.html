@@ -23,7 +23,7 @@
 
       <!-- CARD 1: CONFIGURACIÓN -->
       <section class="card config-card">
-        <h2>⚙️ Gestionar Trabajadores y Guardias</h2>
+        <h2>⚙️ Gestionar Datos</h2>
         <div class="config-grid">
           <!-- Trabajadores -->
           <div class="config-block">
@@ -35,11 +35,16 @@
                 placeholder="Nombre completo"
                 autocomplete="off"
               />
-              <button id="addWorkerBtn" class="btn primary">➕ Añadir</button>
+              <button id="addWorkerBtn" class="btn primary">➕ Añadir Trabajador</button>
               <button
                 id="clearAllDataBtn"
                 class="btn outline"
-                style="border-color: #dc3545; color: #dc3545"
+                style="
+                  border-color: #dc3545;
+                  color: #dc3545;
+                  min-width: 180px;
+                  padding: 0.5rem 4.3rem;
+                "
               >
                 ⚠️ Limpiar todos los Datos del Sistema
               </button>
@@ -53,8 +58,8 @@
                 for="importWorkersInput"
                 class="btn outline small"
                 style="cursor: pointer"
-                >📥 Importar Trabajadores </label
-              >
+                >📥 Importar Trabajadores
+              </label>
               <input
                 type="file"
                 id="importWorkersInput"
@@ -91,8 +96,8 @@
                 for="importDaysInput"
                 class="btn outline small"
                 style="cursor: pointer"
-                >📥 Importar Días de Guardia </label
-              >
+                >📥 Importar Días de Guardia
+              </label>
               <input
                 type="file"
                 id="importDaysInput"
@@ -102,7 +107,7 @@
             </div>
             <small
               >📌 Los días aquí definidos se usarán para asignar una guardia en
-              orden rotativo. Para múltiples guardias en un mismo día, añádelas
+              orden.<br> Para múltiples guardias en un mismo día, añádelas
               manualmente.</small
             >
           </div>
@@ -320,7 +325,11 @@
         </div>
         <div class="form-group">
           <label>📝 Notas:</label>
-          <input type="text" id="editNotes" placeholder="Ej: Mañana, tarde, sustitución..." />
+          <input
+            type="text"
+            id="editNotes"
+            placeholder="Ej: Mañana, tarde, sustitución..."
+          />
         </div>
         <div class="form-actions">
           <button id="saveEditBtn" class="btn success">💾 Guardar</button>
