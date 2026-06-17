@@ -75,7 +75,7 @@ function renderWorkersList() {
   const container = document.getElementById("workersList");
   if (!container) return;
   if (workers.length === 0) {
-    container.innerHTML = "<p>No hay trabajadores. Añade uno.</p>";
+    container.innerHTML = "<p>No hay trabajadores.<br>Añade uno.</p>";
     return;
   }
   container.innerHTML = "";
