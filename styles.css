@@ -278,24 +278,22 @@ select:focus {
   justify-content: flex-start;
   gap: 0.5rem;
   background: white;
-  padding: 0.75rem 0.5rem; /* más espacio para trabajadores */
+  padding: 0.75rem 0.5rem;
   border-radius: var(--border-radius);
   border: 1px solid var(--gray-300);
   min-height: 60px;
   margin: 0.5rem 0;
 }
 
-/* Contenedor de días (reduce el padding) */
 .days-grid {
-  padding: 0.25rem; /* menos espacio */
+  padding: 0.25rem;
   gap: 0.3rem;
 }
 
-/* Etiquetas de trabajadores (más grandes) */
 .worker-tag {
   background: var(--primary-light);
   color: var(--primary-dark);
-  padding: 0.4rem 0.8rem; /* más padding */
+  padding: 0.4rem 0.8rem;
   border-radius: 2rem;
   display: inline-flex;
   align-items: center;
@@ -304,11 +302,10 @@ select:focus {
   font-weight: 500;
 }
 
-/* Etiquetas de días (más pequeñas) */
 .day-tag {
   background: #e3f2fd;
   color: var(--primary-dark);
-  padding: 0.2rem 0.4rem; /* menos padding */
+  padding: 0.2rem 0.4rem;
   border-radius: 2rem;
   display: inline-flex;
   align-items: center;
@@ -463,9 +460,23 @@ td input[type="checkbox"] {
   transform: translateY(-1px);
 }
 
+/* Botón de nota (icono) */
+.btn-note {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 0.1rem 0.3rem;
+  transition: var(--transition);
+  border-radius: var(--border-radius-sm);
+}
+.btn-note:hover {
+  background: var(--gray-200);
+  transform: scale(1.1);
+}
+
 td:nth-child(5) {
   text-align: center;
-  font-size: 1.1rem;
 }
 
 /* ----- PAGINATION ----- */
@@ -662,7 +673,7 @@ td:nth-child(5) {
   padding-right: 1.5rem;
 }
 
-.close, .close-manual, .close-day {
+.close, .close-manual, .close-day, .close-note {
   position: absolute;
   right: 0.75rem;
   top: 0.75rem;
@@ -672,7 +683,8 @@ td:nth-child(5) {
   transition: var(--transition);
   line-height: 1;
 }
-.close:hover {
+.close:hover,
+.close-note:hover {
   color: var(--danger);
 }
 
@@ -772,7 +784,6 @@ td:nth-child(5) {
 
 /* ----- TABLA RESPONSIVE (conversión a tarjetas en móvil) ----- */
 @media (max-width: 599px) {
-  /* Ocultar cabecera de tabla en móvil */
   #guardsTable thead {
     display: none;
   }
@@ -817,11 +828,6 @@ td:nth-child(5) {
   #guardsTable tbody td input[type="checkbox"] {
     width: 1.4rem;
     height: 1.4rem;
-  }
-
-  /* Ocultar la columna de notas si está vacía */
-  #guardsTable tbody td:nth-child(5) {
-    justify-content: flex-end;
   }
 
   .btn-edit {

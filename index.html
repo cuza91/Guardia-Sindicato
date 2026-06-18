@@ -184,9 +184,9 @@
               <div class="form-row">
                 <label for="summaryFilter">Filtrar:</label>
                 <select id="summaryFilter" style="flex: 2">
-                  <option value="all">Todos los trabajadores</option>
-                  <option value="noGuards">Sin guardias</option>
-                  <option value="noCompleted">Sin realizadas</option>
+                  <option value="all">Todos los trabajadores que tienen Guardias</option>
+                  <option value="noGuards">Sin guardias Asignadas</option>
+                  <option value="noCompleted">Sin Realizadas</option>
                 </select>
               </div>
               <div id="summaryStats" class="stats-container">
@@ -354,6 +354,18 @@
         <div class="form-actions">
           <button id="saveDayEditBtn" class="btn success">💾 Actualizar</button>
           <button id="cancelDayEditBtn" class="btn outline">❌ Cancelar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal para ver nota -->
+    <div id="noteModal" class="modal" style="display: none">
+      <div class="modal-content">
+        <span class="close-note">&times;</span>
+        <h3>📝 Nota</h3>
+        <p id="noteContent" style="white-space: pre-wrap; word-break: break-word; margin: 0.5rem 0;"></p>
+        <div class="form-actions">
+          <button id="closeNoteBtn" class="btn outline">Cerrar</button>
         </div>
       </div>
     </div>
