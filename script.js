@@ -600,6 +600,20 @@ function applyFiltersAndRenderTable() {
   renderGuardsTablePage();
 }
 
+// Función para mostrar la nota en un modal
+function showNote(guardId) {
+  const guard = guards.find(g => g.id === guardId);
+  if (!guard || !guard.notes) return;
+  const modal = document.getElementById("noteModal");
+  const content = document.getElementById("noteContent");
+  content.textContent = guard.notes;
+  modal.style.display = "flex";
+}
+
+function closeNoteModal() {
+  document.getElementById("noteModal").style.display = "none";
+}
+
 function renderGuardsTablePage() {
   const tbody = document.getElementById("guardsTableBody");
   if (!tbody) return;
@@ -613,7 +627,6 @@ function renderGuardsTablePage() {
   }
   tbody.innerHTML = "";
   const isAdminUser = isAdmin();
-  const columnLabels = ['date','worker','completed','catedra','notes','actions'];
   for (const guard of pageGuards) {
     const worker = guard.workerId ? workers.find((w) => w.id === guard.workerId) : null;
     const workerName = worker ? worker.name : guard.workerId ? "❌ Eliminado" : "Sin asignar";
@@ -653,10 +666,15 @@ function renderGuardsTablePage() {
     const td5 = row.insertCell(4);
     td5.setAttribute('data-label', '📝 Notas');
     if (guard.notes) {
-      const icon = document.createElement("span");
-      icon.textContent = "📝";
-      icon.title = guard.notes;
-      td5.appendChild(icon);
+      const noteBtn = document.createElement('button');
+      noteBtn.textContent = '📝';
+      noteBtn.className = 'btn-note';
+      noteBtn.setAttribute('aria-label', 'Ver nota');
+      noteBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        showNote(guard.id);
+      });
+      td5.appendChild(noteBtn);
     }
     
     // Acciones
@@ -1324,10 +1342,14 @@ function bindEvents() {
   document.getElementById("saveDayEditBtn")?.addEventListener("click", saveDayEdit);
   document.getElementById("cancelDayEditBtn")?.addEventListener("click", closeDayModal);
   document.querySelector(".close-day")?.addEventListener("click", closeDayModal);
+  // Cerrar modal de nota
+  document.querySelector(".close-note")?.addEventListener("click", closeNoteModal);
+  document.getElementById("closeNoteBtn")?.addEventListener("click", closeNoteModal);
   window.addEventListener("click", (e) => {
     if (e.target === document.getElementById("editModal")) closeModal();
     if (e.target === document.getElementById("manualModal")) closeManualModal();
     if (e.target === document.getElementById("editDayModal")) closeDayModal();
+    if (e.target === document.getElementById("noteModal")) closeNoteModal();
   });
   document.getElementById("workerName")?.addEventListener("keypress", (e) => {
     if (e.key === "Enter") addWorker();
