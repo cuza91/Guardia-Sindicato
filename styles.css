@@ -723,6 +723,10 @@ small {
     display: none !important;
   }
 
+  .print-only {
+    display: block !important;
+  }
+
   .view-section {
     display: none !important;
   }

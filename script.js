@@ -1000,9 +1000,54 @@ function setActiveView(view) {
   }
 }
 
+// ---------- PERÍODO PARA PDF ----------
+function getPeriodInfo(view) {
+  if (view === 'Gestion') {
+    // Determinar si estamos en tabla o calendario
+    const tableViewSection = document.getElementById('tableViewSection');
+    const isTable = tableViewSection.style.display !== 'none';
+    if (isTable) {
+      const year = document.getElementById('filterYear')?.value || 'all';
+      const month = document.getElementById('filterMonth')?.value || 'all';
+      const monthNames = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
+      const monthName = month === 'all' ? 'todos los meses' : monthNames[parseInt(month)-1];
+      const yearText = year === 'all' ? 'todos los años' : year;
+      return `Período: ${monthName} ${yearText}`;
+    } else {
+      // calendario
+      const monthNames = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
+      return `Período: ${monthNames[currentCalendarMonth]} ${currentCalendarYear}`;
+    }
+  } else if (view === 'Reportes') {
+    const year = document.getElementById('reportYear')?.value || 'all';
+    const month = document.getElementById('reportMonth')?.value || 'all';
+    const monthNames = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
+    const monthName = month === 'all' ? 'todos los meses' : monthNames[parseInt(month)-1];
+    const yearText = year === 'all' ? 'todos los años' : year;
+    return `Período: ${monthName} ${yearText}`;
+  }
+  return '';
+}
+
 // ---------- EXPORTAR A PDF ----------
 function exportToPdf() {
-  window.print();
+  const activeView = document.querySelector('.view-section.active-view');
+  if (!activeView) return;
+  const viewId = activeView.id; // 'viewGestion', 'viewReportes', 'viewConfig'
+  const viewName = viewId.replace('view', '');
+  const periodInfo = getPeriodInfo(viewName);
+  // Actualizar el div correspondiente
+  if (viewName === 'Gestion') {
+    const el = document.getElementById('gestionPeriodInfo');
+    if (el) el.textContent = periodInfo;
+  } else if (viewName === 'Reportes') {
+    const el = document.getElementById('reportesPeriodInfo');
+    if (el) el.textContent = periodInfo;
+  }
+  // Esperar un momento para que se actualice el DOM y luego imprimir
+  setTimeout(() => {
+    window.print();
+  }, 100);
 }
 
 // ---------- LIMPIEZA Y EJEMPLO ----------
