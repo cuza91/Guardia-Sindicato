@@ -25,10 +25,6 @@
       "name": "Milaidys Pérez Vedey"
     },
     {
-      "id": 1781469978321,
-      "name": "Leonides Guerrero Laffita"
-    },
-    {
       "id": 1781469978322,
       "name": "Arael Padró Caldentey"
     },
@@ -203,9 +199,124 @@
     {
       "id": 1781469978365,
       "name": "Jorge Luis Olivares Casas"
+    },
+    {
+      "id": 1781698703183,
+      "name": "Dorli Montoya"
+    },
+    {
+      "id": 1781698865579,
+      "name": "Yania Verdecia Acosta"
     }
   ],
-  "guards": [],
+  "guards": [
+    {
+      "id": 22,
+      "date": "2026-01-03",
+      "workerId": 1781469978315,
+      "completed": true,
+      "catedra": "COM",
+      "notes": "Guardia de 24 horas"
+    },
+    {
+      "id": 11,
+      "date": "2026-06-02",
+      "workerId": 1781469978334,
+      "completed": true,
+      "catedra": "Idiomas",
+      "notes": ""
+    },
+    {
+      "id": 12,
+      "date": "2026-06-04",
+      "workerId": 1781469978351,
+      "completed": true,
+      "catedra": "FPT",
+      "notes": "No Verificada en el Libro"
+    },
+    {
+      "id": 13,
+      "date": "2026-06-09",
+      "workerId": 1781469978328,
+      "completed": true,
+      "catedra": "FQ",
+      "notes": ""
+    },
+    {
+      "id": 14,
+      "date": "2026-06-11",
+      "workerId": 1781469978338,
+      "completed": true,
+      "catedra": "Idiomas",
+      "notes": ""
+    },
+    {
+      "id": 15,
+      "date": "2026-06-15",
+      "workerId": 1781469978319,
+      "completed": true,
+      "catedra": "MAT",
+      "notes": ""
+    },
+    {
+      "id": 16,
+      "date": "2026-06-16",
+      "workerId": 1781469978315,
+      "completed": true,
+      "catedra": "COM",
+      "notes": ""
+    },
+    {
+      "id": 17,
+      "date": "2026-06-18",
+      "workerId": 1781469978348,
+      "completed": false,
+      "catedra": "FPT",
+      "notes": ""
+    },
+    {
+      "id": 18,
+      "date": "2026-06-22",
+      "workerId": 1781698703183,
+      "completed": false,
+      "catedra": "Idiomas",
+      "notes": "Verificar Nombre"
+    },
+    {
+      "id": 19,
+      "date": "2026-06-24",
+      "workerId": 1781698865579,
+      "completed": false,
+      "catedra": "FQ",
+      "notes": ""
+    },
+    {
+      "id": 20,
+      "date": "2026-06-25",
+      "workerId": 1781469978317,
+      "completed": false,
+      "catedra": "MAT",
+      "notes": ""
+    },
+    {
+      "id": 21,
+      "date": "2026-06-29",
+      "workerId": 1781469978349,
+      "completed": false,
+      "catedra": "FPT",
+      "notes": ""
+    },
+    {
+      "id": 23,
+      "date": "2026-06-30",
+      "workerId": 1781469978357,
+      "completed": false,
+      "catedra": "COM",
+      "notes": ""
+    }
+  ],
+  "guardDays": [],
   "currentYear": 2026,
-  "exportDate": "2026-06-14T20:47:12.384Z"
+  "lastWorkerIndexForDays": 0,
+  "exportDate": "2026-06-17T12:29:48.308Z"
 }

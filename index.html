@@ -21,9 +21,9 @@
         </div>
       </header>
 
-      <!-- CARD 1: CONFIGURACIÓN (Trabajadores + Días definidos) -->
+      <!-- CARD 1: CONFIGURACIÓN -->
       <section class="card config-card">
-        <h2>⚙️ Gestionar Trabajadores y Guardias</h2>
+        <h2>⚙️ Gestionar Datos</h2>
         <div class="config-grid">
           <!-- Trabajadores -->
           <div class="config-block">
@@ -35,11 +35,18 @@
                 placeholder="Nombre completo"
                 autocomplete="off"
               />
-              <button id="addWorkerBtn" class="btn primary">➕ Añadir</button>
+              <button id="addWorkerBtn" class="btn primary">
+                ➕ Añadir Trabajador
+              </button>
               <button
                 id="clearAllDataBtn"
                 class="btn outline"
-                style="border-color: #dc3545; color: #dc3545"
+                style="
+                  border-color: #dc3545;
+                  color: #dc3545;
+                  min-width: 180px;
+                  padding: 0.5rem 4.3rem;
+                "
               >
                 ⚠️ Limpiar todos los Datos del Sistema
               </button>
@@ -53,8 +60,8 @@
                 for="importWorkersInput"
                 class="btn outline small"
                 style="cursor: pointer"
-                >📥 Importar Trabajadores</label
-              >
+                >📥 Importar Trabajadores
+              </label>
               <input
                 type="file"
                 id="importWorkersInput"
@@ -80,19 +87,19 @@
                 🎯 Generar Guardias (Días Seleccionados)
               </button>
             </div>
-            <div id="guardDaysList" class="items-list">
+            <div id="guardDaysList" class="items-list days-grid">
               <p>No hay días definidos. Añade fechas específicas.</p>
             </div>
             <div class="form-row">
               <button id="exportDaysBtn" class="btn outline small">
-                📤 <strong> Exportar Días de Guardia</strong>
+                <strong>📤 Exportar Días de Guardia</strong>
               </button>
               <label
                 for="importDaysInput"
                 class="btn outline small"
                 style="cursor: pointer"
-                >📥 Importar Días de Guardia</label
-              >
+                >📥 Importar Días de Guardia
+              </label>
               <input
                 type="file"
                 id="importDaysInput"
@@ -101,8 +108,10 @@
               />
             </div>
             <small
-              >📌 Los días aquí definidos se usarán para asignar guardias en
-              orden rotativo.</small
+              >📌 Los días aquí definidos se usarán para asignar una guardia en
+              orden.<br />
+              Para múltiples guardias en un mismo día, añádelas
+              manualmente.</small
             >
           </div>
         </div>
@@ -223,6 +232,10 @@
             </select>
             <select id="filterWorker" style="flex: 2">
               <option value="all">Trabajador</option>
+              <option value="none">Sin asignar</option>
+            </select>
+            <select id="filterCatedra" style="flex: 2">
+              <option value="all">Cátedra</option>
             </select>
             <button id="clearFiltersBtn" class="btn outline">🗑️ Limpiar</button>
           </div>
@@ -237,12 +250,14 @@
                   <th>Fecha</th>
                   <th>Trabajador</th>
                   <th>Realizada</th>
+                  <th>Cátedra</th>
+                  <th>Notas</th>
                   <th>Acciones</th>
                 </tr>
               </thead>
               <tbody id="guardsTableBody">
                 <tr>
-                  <td colspan="4">No hay guardias. Genera o importa datos.</td>
+                  <td colspan="6">No hay guardias. Genera o importa datos.</td>
                 </tr>
               </tbody>
             </table>
@@ -299,11 +314,25 @@
         </div>
         <div class="form-group">
           <label>👤 Trabajador:</label>
-          <select id="editWorker"></select>
+          <select id="editWorker">
+            <option value="">— Sin asignar —</option>
+          </select>
         </div>
         <div class="form-group">
           <label>✅ Realizada:</label>
           <input type="checkbox" id="editCompleted" />
+        </div>
+        <div class="form-group">
+          <label>🏛️ Cátedra:</label>
+          <input type="text" id="editCatedra" placeholder="Ej: Matemáticas" />
+        </div>
+        <div class="form-group">
+          <label>📝 Notas:</label>
+          <input
+            type="text"
+            id="editNotes"
+            placeholder="Ej: Mañana, tarde, sustitución..."
+          />
         </div>
         <div class="form-actions">
           <button id="saveEditBtn" class="btn success">💾 Guardar</button>
@@ -312,7 +341,7 @@
       </div>
     </div>
 
-    <!-- MODAL AÑADIR MANUAL (CON BUSCADOR) -->
+    <!-- MODAL AÑADIR MANUAL -->
     <div id="manualModal" class="modal" style="display: none">
       <div class="modal-content">
         <span class="close-manual">&times;</span>
@@ -336,8 +365,18 @@
             id="manualWorker"
             size="5"
             style="height: auto; min-height: 120px"
-          ></select>
+          >
+            <option value="">— Sin asignar —</option>
+          </select>
           <small>💡 Haz clic en el nombre para seleccionarlo</small>
+        </div>
+        <div class="form-group">
+          <label>🏛️ Cátedra:</label>
+          <input type="text" id="manualCatedra" placeholder="Opcional" />
+        </div>
+        <div class="form-group">
+          <label>📝 Notas:</label>
+          <input type="text" id="manualNotes" placeholder="Opcional" />
         </div>
         <div class="form-actions">
           <button id="saveManualBtn" class="btn success">✅ Añadir</button>

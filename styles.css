@@ -241,6 +241,7 @@ select:focus {
 .items-list {
   display: flex;
   flex-wrap: wrap;
+  justify-content: flex-start; /* ← Cambia de 'center' a 'flex-start' */
   gap: 0.5rem;
   background: white;
   padding: 0.75rem;
@@ -248,6 +249,21 @@ select:focus {
   border: 1px solid var(--gray-300);
   min-height: 70px;
   margin: 0.75rem 0;
+}
+
+/* Estilo específico para el listado de días en 2 columnas */
+.days-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.5rem;
+  padding: 0.75rem;
+}
+
+.days-grid .day-tag {
+  justify-content: center;
+  width: 100%;
+  padding: 0.3rem 0.5rem;
+  text-align: center;
 }
 
 .worker-tag,
@@ -399,6 +415,11 @@ td input[type="checkbox"] {
   transform: translateY(-1px);
 }
 
+td:nth-child(5) {
+  text-align: center;
+  font-size: 1.2rem;
+}
+
 /* ----- PAGINATION ----- */
 .pagination {
   display: flex;
@@ -488,6 +509,7 @@ td input[type="checkbox"] {
   text-align: center;
   font-weight: 500;
   word-break: break-word;
+  margin-top: 1px;
 }
 
 .calendar-day-guard.completed {
@@ -642,7 +664,6 @@ td input[type="checkbox"] {
   width: 100%;
 }
 
-/* Estilo especial para el select del modal manual */
 #manualWorker {
   width: 100%;
   padding: 0.5rem;
@@ -742,7 +763,6 @@ td input[type="checkbox"] {
   }
 }
 
-/* Additional small tweaks */
 small {
   font-size: 0.7rem;
   color: var(--gray-600);
