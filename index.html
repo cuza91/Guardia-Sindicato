@@ -11,7 +11,7 @@
     <div class="container">
       <header>
         <h1>🗓️ Sistema de Gestión de las Guardias del Sindicato</h1>
-        <div class="view-toggle">
+        <div class="view-toggle" id="viewToggleHeader">
           <button id="tableViewBtn" class="btn small active">
             📋 Ver las Guardias en Forma de Tabla
           </button>
@@ -21,286 +21,224 @@
         </div>
       </header>
 
-      <!-- CARD 1: CONFIGURACIÓN -->
-      <section class="card config-card">
-        <h2>⚙️ Gestionar Datos</h2>
-        <div class="config-grid">
-          <!-- Trabajadores -->
-          <div class="config-block">
-            <h3>👥 Listado de Trabajadores</h3>
+      <!-- MENÚ DE NAVEGACIÓN -->
+      <nav class="main-nav">
+        <button id="navGestion" class="btn primary active">📋 Gestión</button>
+        <button id="navReportes" class="btn outline">📊 Reportes</button>
+        <button id="navConfig" class="btn outline">⚙️ Configuración</button>
+      </nav>
+
+      <!-- ========== VISTA GESTIÓN ========== -->
+      <div id="viewGestion" class="view-section">
+        <section class="card guards-card">
+          <h2>
+            📋 Gestión de Guardias
+            <button id="exportPdfGestionBtn" class="btn outline small" style="margin-left: auto;">
+              🖨️ Exportar a PDF
+            </button>
+          </h2>
+
+          <!-- Filtros (solo tabla) -->
+          <div id="filtersSection" class="filters-bar">
             <div class="form-row">
-              <input
-                type="text"
-                id="workerName"
-                placeholder="Nombre completo"
-                autocomplete="off"
-              />
-              <button id="addWorkerBtn" class="btn primary">
-                ➕ Añadir Trabajador
-              </button>
-              <button
-                id="clearAllDataBtn"
-                class="btn outline"
-                style="
-                  border-color: #dc3545;
-                  color: #dc3545;
-                  min-width: 180px;
-                  padding: 0.5rem 4.3rem;
-                "
-              >
-                ⚠️ Limpiar todos los Datos del Sistema
-              </button>
+              <select id="filterDay" style="flex: 1">
+                <option value="all">Día</option>
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+                <option value="6">6</option>
+                <option value="7">7</option>
+                <option value="8">8</option>
+                <option value="9">9</option>
+                <option value="10">10</option>
+                <option value="11">11</option>
+                <option value="12">12</option>
+                <option value="13">13</option>
+                <option value="14">14</option>
+                <option value="15">15</option>
+                <option value="16">16</option>
+                <option value="17">17</option>
+                <option value="18">18</option>
+                <option value="19">19</option>
+                <option value="20">20</option>
+                <option value="21">21</option>
+                <option value="22">22</option>
+                <option value="23">23</option>
+                <option value="24">24</option>
+                <option value="25">25</option>
+                <option value="26">26</option>
+                <option value="27">27</option>
+                <option value="28">28</option>
+                <option value="29">29</option>
+                <option value="30">30</option>
+                <option value="31">31</option>
+              </select>
+              <select id="filterMonth" style="flex: 1">
+                <option value="all">Mes</option>
+                <option value="1">Enero</option>
+                <option value="2">Febrero</option>
+                <option value="3">Marzo</option>
+                <option value="4">Abril</option>
+                <option value="5">Mayo</option>
+                <option value="6">Junio</option>
+                <option value="7">Julio</option>
+                <option value="8">Agosto</option>
+                <option value="9">Septiembre</option>
+                <option value="10">Octubre</option>
+                <option value="11">Noviembre</option>
+                <option value="12">Diciembre</option>
+              </select>
+              <select id="filterYear" style="flex: 1">
+                <option value="all">Año</option>
+              </select>
+              <select id="filterWorker" style="flex: 2">
+                <option value="all">Trabajador</option>
+                <option value="none">Sin asignar</option>
+              </select>
+              <select id="filterCatedra" style="flex: 2">
+                <option value="all">Cátedra</option>
+              </select>
+              <button id="clearFiltersBtn" class="btn outline">🗑️ Limpiar</button>
             </div>
-            <div id="workersList" class="items-list"></div>
+          </div>
+
+          <!-- Vista Tabla -->
+          <div id="tableViewSection">
+            <div class="table-wrapper">
+              <table id="guardsTable">
+                <thead>
+                  <tr>
+                    <th>Fecha</th>
+                    <th>Trabajador</th>
+                    <th>Realizada</th>
+                    <th>Cátedra</th>
+                    <th>Notas</th>
+                    <th>Acciones</th>
+                  </tr>
+                </thead>
+                <tbody id="guardsTableBody">
+                  <tr>
+                    <td colspan="6">No hay guardias. Genera o importa datos.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div id="paginationControls" class="pagination"></div>
+          </div>
+
+          <!-- Vista Calendario -->
+          <div id="calendarViewSection" style="display: none">
+            <div class="calendar-nav">
+              <button id="prevMonthBtn" class="btn outline">◀ Mes anterior</button>
+              <span id="currentMonthYear" style="font-weight: bold; margin: 0 1rem"></span>
+              <button id="nextMonthBtn" class="btn outline">Mes siguiente ▶</button>
+            </div>
+            <div id="calendarGrid" class="calendar-grid"></div>
+            <p class="calendar-note">💡 Haz clic en cualquier día para editar la guardia.</p>
+          </div>
+
+          <div class="form-row" style="margin-top:1rem;">
+            <button id="addManualGuardBtn" class="btn primary">➕ Generar Guardia de Forma Manual</button>
+          </div>
+        </section>
+      </div>
+
+      <!-- ========== VISTA REPORTES ========== -->
+      <div id="viewReportes" class="view-section" style="display: none;">
+        <section class="card">
+          <h2>
+            📊 Reportes y Estadísticas
+            <button id="exportPdfReportesBtn" class="btn outline small" style="margin-left: auto;">
+              🖨️ Exportar a PDF
+            </button>
+          </h2>
+          <div class="summary-section">
+            <h3>Seguimiento por trabajador</h3>
             <div class="form-row">
-              <button id="exportWorkersBtn" class="btn outline small">
-                <strong>📤 Exportar Trabajadores</strong>
-              </button>
-              <label
-                for="importWorkersInput"
-                class="btn outline small"
-                style="cursor: pointer"
-                >📥 Importar Trabajadores
-              </label>
-              <input
-                type="file"
-                id="importWorkersInput"
-                accept=".json"
-                style="display: none"
-              />
+              <label for="summaryFilter">Filtrar:</label>
+              <select id="summaryFilter" style="flex: 2">
+                <option value="all">Todos los trabajadores</option>
+                <option value="noGuards">Sin guardias asignadas</option>
+                <option value="noCompleted">Sin guardias realizadas</option>
+              </select>
             </div>
-            <small
-              >⚡ Si cambias la lista de trabajadores, deberás regenerar las
-              guardias.</small
-            >
-          </div>
-
-          <!-- Días de Guardia Definidos -->
-          <div class="config-block">
-            <h3>📆 Listado de Días de Guardia</h3>
-            <div class="form-row">
-              <input type="date" id="newGuardDay" value="2026-01-01" />
-              <button id="addGuardDayBtn" class="btn primary">
-                ➕ Añadir día
-              </button>
-              <button id="generateFromDaysBtn" class="btn success">
-                🎯 Generar Guardias (Días Seleccionados)
-              </button>
+            <div id="summaryStats" class="stats-container">
+              <p>Genera guardias para ver estadísticas.</p>
             </div>
-            <div id="guardDaysList" class="items-list days-grid">
-              <p>No hay días definidos. Añade fechas específicas.</p>
+          </div>
+        </section>
+      </div>
+
+      <!-- ========== VISTA CONFIGURACIÓN ========== -->
+      <div id="viewConfig" class="view-section" style="display: none;">
+        <!-- CARD 1: CONFIGURACIÓN -->
+        <section class="card config-card">
+          <h2>⚙️ Gestionar Datos</h2>
+          <div class="config-grid">
+            <!-- Trabajadores -->
+            <div class="config-block">
+              <h3>👥 Listado de Trabajadores</h3>
+              <div class="form-row">
+                <input type="text" id="workerName" placeholder="Nombre completo" autocomplete="off" />
+                <button id="addWorkerBtn" class="btn primary">➕ Añadir Trabajador</button>
+                <button id="clearAllDataBtn" class="btn outline" style="border-color:#dc3545;color:#dc3545;min-width:180px;padding:0.5rem 4.3rem;">
+                  ⚠️ Limpiar todos los Datos del Sistema
+                </button>
+              </div>
+              <div id="workersList" class="items-list"></div>
+              <div class="form-row">
+                <button id="exportWorkersBtn" class="btn outline small"><strong>📤 Exportar Trabajadores</strong></button>
+                <label for="importWorkersInput" class="btn outline small" style="cursor:pointer">📥 Importar Trabajadores</label>
+                <input type="file" id="importWorkersInput" accept=".json" style="display:none" />
+              </div>
+              <small>⚡ Si cambias la lista de trabajadores, deberás regenerar las guardias.</small>
             </div>
-            <div class="form-row">
-              <button id="exportDaysBtn" class="btn outline small">
-                <strong>📤 Exportar Días de Guardia</strong>
-              </button>
-              <label
-                for="importDaysInput"
-                class="btn outline small"
-                style="cursor: pointer"
-                >📥 Importar Días de Guardia
-              </label>
-              <input
-                type="file"
-                id="importDaysInput"
-                accept=".json"
-                style="display: none"
-              />
+
+            <!-- Días de Guardia Definidos -->
+            <div class="config-block">
+              <h3>📆 Listado de Días de Guardia</h3>
+              <div class="form-row">
+                <input type="date" id="newGuardDay" value="2026-01-01" />
+                <button id="addGuardDayBtn" class="btn primary">➕ Añadir día</button>
+                <button id="generateFromDaysBtn" class="btn success">🎯 Generar Guardias (Días Seleccionados)</button>
+              </div>
+              <div id="guardDaysList" class="items-list days-grid">
+                <p>No hay días definidos. Añade fechas específicas.</p>
+              </div>
+              <div class="form-row">
+                <button id="exportDaysBtn" class="btn outline small"><strong>📤 Exportar Días de Guardia</strong></button>
+                <label for="importDaysInput" class="btn outline small" style="cursor:pointer">📥 Importar Días de Guardia</label>
+                <input type="file" id="importDaysInput" accept=".json" style="display:none" />
+              </div>
+              <small>📌 Los días aquí definidos se usarán para asignar una guardia en orden.<br />
+                Para múltiples guardias en un mismo día, añádelas manualmente.</small>
             </div>
-            <small
-              >📌 Los días aquí definidos se usarán para asignar una guardia en
-              orden.<br />
-              Para múltiples guardias en un mismo día, añádelas
-              manualmente.</small
-            >
           </div>
-        </div>
-      </section>
+        </section>
 
-      <!-- CARD 2: ACCIONES -->
-      <section class="card actions-card">
-        <h2>⚡ Generar Guardias</h2>
-        <div class="actions-grid">
-          <div class="action-group">
-            <label for="yearSelect">Año:</label>
-            <input
-              type="number"
-              id="yearSelect"
-              value="2026"
-              min="2024"
-              max="2030"
-              style="width: 100px"
-            />
-            <button id="generateBtn" class="btn success">
-              🔄 Generar Guardias Automáticamente (Todo el Año)
-            </button>
-            <button id="addManualGuardBtn" class="btn primary">
-              ➕ Generar Guardia de Forma Manual
-            </button>
+        <!-- CARD 2: ACCIONES -->
+        <section class="card actions-card">
+          <h2>⚡ Generar Guardias</h2>
+          <div class="actions-grid">
+            <div class="action-group">
+              <label for="yearSelect">Año:</label>
+              <input type="number" id="yearSelect" value="2026" min="2024" max="2030" style="width:100px" />
+              <button id="generateBtn" class="btn success">🔄 Generar Guardias Automáticamente (Todo el Año)</button>
+            </div>
+            <div class="action-group">
+              <button id="exportDataBtn" class="btn outline">💾 Exportar Datos</button>
+              <label for="importFileInput" class="btn outline" style="cursor:pointer">📂 Importar Datos</label>
+              <input type="file" id="importFileInput" accept=".json" style="display:none" />
+              <button id="resetAllChecksBtn" class="btn outline small" style="border-color:#dc3545;color:#dc3545">❌ Desmarcar Todas las Guardias</button>
+            </div>
           </div>
-          <div class="action-group">
-            <button id="exportDataBtn" class="btn outline">
-              💾 Exportar Datos
-            </button>
-            <label
-              for="importFileInput"
-              class="btn outline"
-              style="cursor: pointer"
-              >📂 Importar Datos
-            </label>
-            <input
-              type="file"
-              id="importFileInput"
-              accept=".json"
-              style="display: none"
-            />
-            <button
-              id="resetAllChecksBtn"
-              class="btn outline small"
-              style="border-color: #dc3545; color: #dc3545"
-            >
-              ❌ Desmarcar Todas las Guardias
-            </button>
+          <div class="info-bar">
+            <span>📌 Los fines de semana no se generan automáticamente (puedes añadirlos como días definidos o manualmente).</span>
           </div>
-        </div>
-        <div class="info-bar">
-          <span
-            >📌 Los fines de semana no se generan automáticamente (puedes
-            añadirlos como días definidos o manualmente).
-          </span>
-        </div>
-      </section>
-
-      <!-- CARD 3: GUARDIAS -->
-      <section class="card guards-card">
-        <h2>📋 Gestión de Guardias</h2>
-
-        <!-- Filtros (solo tabla) -->
-        <div id="filtersSection" class="filters-bar">
-          <div class="form-row">
-            <select id="filterDay" style="flex: 1">
-              <option value="all">Día</option>
-              <option value="1">1</option>
-              <option value="2">2</option>
-              <option value="3">3</option>
-              <option value="4">4</option>
-              <option value="5">5</option>
-              <option value="6">6</option>
-              <option value="7">7</option>
-              <option value="8">8</option>
-              <option value="9">9</option>
-              <option value="10">10</option>
-              <option value="11">11</option>
-              <option value="12">12</option>
-              <option value="13">13</option>
-              <option value="14">14</option>
-              <option value="15">15</option>
-              <option value="16">16</option>
-              <option value="17">17</option>
-              <option value="18">18</option>
-              <option value="19">19</option>
-              <option value="20">20</option>
-              <option value="21">21</option>
-              <option value="22">22</option>
-              <option value="23">23</option>
-              <option value="24">24</option>
-              <option value="25">25</option>
-              <option value="26">26</option>
-              <option value="27">27</option>
-              <option value="28">28</option>
-              <option value="29">29</option>
-              <option value="30">30</option>
-              <option value="31">31</option>
-            </select>
-            <select id="filterMonth" style="flex: 1">
-              <option value="all">Mes</option>
-              <option value="1">Enero</option>
-              <option value="2">Febrero</option>
-              <option value="3">Marzo</option>
-              <option value="4">Abril</option>
-              <option value="5">Mayo</option>
-              <option value="6">Junio</option>
-              <option value="7">Julio</option>
-              <option value="8">Agosto</option>
-              <option value="9">Septiembre</option>
-              <option value="10">Octubre</option>
-              <option value="11">Noviembre</option>
-              <option value="12">Diciembre</option>
-            </select>
-            <select id="filterYear" style="flex: 1">
-              <option value="all">Año</option>
-            </select>
-            <select id="filterWorker" style="flex: 2">
-              <option value="all">Trabajador</option>
-              <option value="none">Sin asignar</option>
-            </select>
-            <select id="filterCatedra" style="flex: 2">
-              <option value="all">Cátedra</option>
-            </select>
-            <button id="clearFiltersBtn" class="btn outline">🗑️ Limpiar</button>
-          </div>
-        </div>
-
-        <!-- Vista Tabla -->
-        <div id="tableViewSection">
-          <div class="table-wrapper">
-            <table id="guardsTable">
-              <thead>
-                <tr>
-                  <th>Fecha</th>
-                  <th>Trabajador</th>
-                  <th>Realizada</th>
-                  <th>Cátedra</th>
-                  <th>Notas</th>
-                  <th>Acciones</th>
-                </tr>
-              </thead>
-              <tbody id="guardsTableBody">
-                <tr>
-                  <td colspan="6">No hay guardias. Genera o importa datos.</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-          <div id="paginationControls" class="pagination"></div>
-        </div>
-
-        <!-- Vista Calendario -->
-        <div id="calendarViewSection" style="display: none">
-          <div class="calendar-nav">
-            <button id="prevMonthBtn" class="btn outline">
-              ◀ Mes anterior
-            </button>
-            <span
-              id="currentMonthYear"
-              style="font-weight: bold; margin: 0 1rem"
-            ></span>
-            <button id="nextMonthBtn" class="btn outline">
-              Mes siguiente ▶
-            </button>
-          </div>
-          <div id="calendarGrid" class="calendar-grid"></div>
-          <p class="calendar-note">
-            💡 Haz clic en cualquier día para editar la guardia.
-          </p>
-        </div>
-
-        <!-- Resumen -->
-        <div class="summary-section">
-          <h3>📊 Seguimiento por trabajador</h3>
-          <div class="form-row">
-            <label for="summaryFilter">Filtrar:</label>
-            <select id="summaryFilter" style="flex: 2">
-              <option value="all">Todos los trabajadores</option>
-              <option value="noGuards">Sin guardias asignadas</option>
-              <option value="noCompleted">Sin guardias realizadas</option>
-            </select>
-          </div>
-          <div id="summaryStats" class="stats-container">
-            <p>Genera guardias para ver estadísticas.</p>
-          </div>
-        </div>
-      </section>
+        </section>
+      </div>
     </div>
 
     <!-- MODAL EDITAR GUARDIA -->
@@ -328,11 +266,7 @@
         </div>
         <div class="form-group">
           <label>📝 Notas:</label>
-          <input
-            type="text"
-            id="editNotes"
-            placeholder="Ej: Mañana, tarde, sustitución..."
-          />
+          <input type="text" id="editNotes" placeholder="Ej: Mañana, tarde, sustitución..." />
         </div>
         <div class="form-actions">
           <button id="saveEditBtn" class="btn success">💾 Guardar</button>
@@ -352,20 +286,11 @@
         </div>
         <div class="form-group">
           <label>🔍 Buscar trabajador:</label>
-          <input
-            type="text"
-            id="searchWorkerInput"
-            placeholder="Escribe para filtrar..."
-            autocomplete="off"
-          />
+          <input type="text" id="searchWorkerInput" placeholder="Escribe para filtrar..." autocomplete="off" />
         </div>
         <div class="form-group">
           <label>👤 Trabajador:</label>
-          <select
-            id="manualWorker"
-            size="5"
-            style="height: auto; min-height: 120px"
-          >
+          <select id="manualWorker" size="5" style="height: auto; min-height: 120px">
             <option value="">— Sin asignar —</option>
           </select>
           <small>💡 Haz clic en el nombre para seleccionarlo</small>

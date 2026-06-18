@@ -59,10 +59,7 @@ function loadData() {
 // ---------- UTILS ----------
 function escapeHtml(str) {
   if (!str) return "";
-  return str.replace(
-    /[&<>]/g,
-    (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" })[m],
-  );
+  return str.replace(/[&<>]/g, (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" })[m]);
 }
 
 function formatDate(dateStr) {
@@ -133,34 +130,21 @@ function renderWorkersList() {
       if (opcion === "1") {
         workers = workers.filter((w) => w.id !== id);
         guards = guards.filter((g) => g.workerId !== id);
-        alert(
-          `Trabajador "${worker.name}" eliminado junto con sus ${guardCount} guardias.`,
-        );
+        alert(`Trabajador "${worker.name}" eliminado junto con sus ${guardCount} guardias.`);
       } else if (opcion === "2") {
         workers = workers.filter((w) => w.id !== id);
-        alert(
-          `Trabajador "${worker.name}" eliminado. Se conservaron ${guardCount} guardias.`,
-        );
+        alert(`Trabajador "${worker.name}" eliminado. Se conservaron ${guardCount} guardias.`);
       } else if (opcion === "3") {
         if (workers.length === 1) {
           alert("No hay otros trabajadores para reasignar.");
           return;
         }
         const otherWorkers = workers.filter((w) => w.id !== id);
-        let workerListStr = otherWorkers
-          .map((w, idx) => `${idx + 1}. ${w.name}`)
-          .join("\n");
-        let newWorkerIndex = prompt(
-          `Selecciona el trabajador que recibirá las ${guardCount} guardias:\n${workerListStr}`,
-          "1",
-        );
+        let workerListStr = otherWorkers.map((w, idx) => `${idx + 1}. ${w.name}`).join("\n");
+        let newWorkerIndex = prompt(`Selecciona el trabajador que recibirá las ${guardCount} guardias:\n${workerListStr}`, "1");
         if (newWorkerIndex === null) return;
         newWorkerIndex = parseInt(newWorkerIndex) - 1;
-        if (
-          isNaN(newWorkerIndex) ||
-          newWorkerIndex < 0 ||
-          newWorkerIndex >= otherWorkers.length
-        ) {
+        if (isNaN(newWorkerIndex) || newWorkerIndex < 0 || newWorkerIndex >= otherWorkers.length) {
           alert("Opción inválida.");
           return;
         }
@@ -171,9 +155,7 @@ function renderWorkersList() {
         workers = workers.filter((w) => w.id !== id);
         saveData();
         refreshUI();
-        alert(
-          `Trabajador "${worker.name}" eliminado. ${guardCount} guardias reasignadas a "${newWorker.name}".`,
-        );
+        alert(`Trabajador "${worker.name}" eliminado. ${guardCount} guardias reasignadas a "${newWorker.name}".`);
         return;
       }
       saveData();
@@ -186,8 +168,7 @@ function addWorker() {
   const input = document.getElementById("workerName");
   const name = input.value.trim();
   if (!name) return alert("Escribe un nombre");
-  if (workers.some((w) => w.name.toLowerCase() === name.toLowerCase()))
-    return alert("Ya existe");
+  if (workers.some((w) => w.name.toLowerCase() === name.toLowerCase())) return alert("Ya existe");
   workers.push({ id: Date.now(), name });
   saveData();
   input.value = "";
@@ -202,9 +183,7 @@ function exportWorkers() {
     return;
   }
   const exportObj = { workers, exportDate: new Date().toISOString() };
-  const blob = new Blob([JSON.stringify(exportObj, null, 2)], {
-    type: "application/json",
-  });
+  const blob = new Blob([JSON.stringify(exportObj, null, 2)], { type: "application/json" });
   const a = document.createElement("a");
   a.download = `trabajadores_${new Date().toISOString().split("T")[0]}.json`;
   a.href = URL.createObjectURL(blob);
@@ -218,8 +197,7 @@ function importWorkersFromJSON(file) {
     try {
       const data = JSON.parse(e.target.result);
       let newWorkers = Array.isArray(data) ? data : data.workers;
-      if (!newWorkers || !Array.isArray(newWorkers))
-        throw new Error("Formato inválido");
+      if (!newWorkers || !Array.isArray(newWorkers)) throw new Error("Formato inválido");
       if (newWorkers.length === 0) {
         if (confirm("Borrar todos los trabajadores actuales?")) {
           workers = [];
@@ -231,8 +209,7 @@ function importWorkersFromJSON(file) {
         }
         return;
       }
-      if (!newWorkers.every((w) => w.id && typeof w.name === "string"))
-        throw new Error("Estructura incorrecta");
+      if (!newWorkers.every((w) => w.id && typeof w.name === "string")) throw new Error("Estructura incorrecta");
       workers = newWorkers;
       guards = [];
       lastWorkerIndexForDays = 0;
@@ -249,10 +226,7 @@ function importWorkersFromJSON(file) {
 function handleImportWorkers(event) {
   const file = event.target.files[0];
   if (!file) return;
-  if (
-    confirm("Se reemplazarán trabajadores y se borrarán guardias. ¿Continuar?")
-  )
-    importWorkersFromJSON(file);
+  if (confirm("Se reemplazarán trabajadores y se borrarán guardias. ¿Continuar?")) importWorkersFromJSON(file);
   event.target.value = "";
 }
 
@@ -306,12 +280,10 @@ function saveDayEdit() {
   if (!currentEditingDay) return;
   const newDate = document.getElementById("editDayInput").value;
   if (!newDate) return alert("Selecciona fecha");
-  if (guardDays.includes(newDate) && newDate !== currentEditingDay)
-    return alert("Ya existe");
+  if (guardDays.includes(newDate) && newDate !== currentEditingDay) return alert("Ya existe");
   const index = guardDays.indexOf(currentEditingDay);
   if (index !== -1) guardDays[index] = newDate;
   guardDays.sort();
-  // Actualizar todas las guardias que tengan esa fecha (puede haber varias)
   guards.forEach((g) => {
     if (g.date === currentEditingDay) g.date = newDate;
   });
@@ -335,9 +307,7 @@ function addGuardDay() {
   guardDays.sort();
   saveData();
   renderGuardDaysList();
-  document.getElementById("newGuardDay").value = new Date()
-    .toISOString()
-    .split("T")[0];
+  document.getElementById("newGuardDay").value = new Date().toISOString().split("T")[0];
   alert("Día añadido.");
 }
 
@@ -345,19 +315,9 @@ function generateGuardsFromDays() {
   if (!workers.length) return alert("No hay trabajadores.");
   if (!guardDays.length) return alert("No hay días definidos.");
   const sortedDays = [...guardDays].sort();
-  // Generar una guardia por cada día definido (independientemente de si ya existe)
-  // Para evitar duplicados excesivos, si ya existe al menos una guardia en ese día, no se genera otra.
-  // Pero como ahora permitimos múltiples, podríamos generar siempre. Sin embargo, para no generar decenas de duplicados al ejecutar varias veces, mejor preguntamos.
-  // Decisión: generamos solo si no hay ninguna guardia en ese día (para mantener compatibilidad con flujo anterior).
-  // El usuario puede añadir manualmente las adicionales.
-  const existingDates = new Set(
-    guards.filter((g) => guardDays.includes(g.date)).map((g) => g.date),
-  );
+  const existingDates = new Set(guards.filter((g) => guardDays.includes(g.date)).map((g) => g.date));
   const newDays = sortedDays.filter((date) => !existingDates.has(date));
-  if (!newDays.length)
-    return alert(
-      "Todos los días ya tienen al menos una guardia. Si quieres añadir más, hazlo manualmente.",
-    );
+  if (!newDays.length) return alert("Todos los días ya tienen al menos una guardia. Si quieres añadir más, hazlo manualmente.");
   const otherGuards = guards.filter((g) => !guardDays.includes(g.date));
   const newGuards = [];
   let workerIndex = lastWorkerIndexForDays;
@@ -375,11 +335,7 @@ function generateGuardsFromDays() {
     workerIndex++;
   }
   lastWorkerIndexForDays = workerIndex % workers.length;
-  guards = [
-    ...otherGuards,
-    ...guards.filter((g) => guardDays.includes(g.date)),
-    ...newGuards,
-  ];
+  guards = [...otherGuards, ...guards.filter((g) => guardDays.includes(g.date)), ...newGuards];
   guards.sort((a, b) => a.date.localeCompare(b.date));
   saveData();
   refreshUI();
@@ -389,9 +345,7 @@ function generateGuardsFromDays() {
 function exportDaysToJSON() {
   if (!guardDays.length) return alert("No hay días para exportar.");
   const data = { guardDays, exportDate: new Date().toISOString() };
-  const blob = new Blob([JSON.stringify(data, null, 2)], {
-    type: "application/json",
-  });
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
   const a = document.createElement("a");
   a.download = `dias_guardia_${currentYear}.json`;
   a.href = URL.createObjectURL(blob);
@@ -404,8 +358,7 @@ function importDaysFromJSON(file) {
   reader.onload = (e) => {
     try {
       const data = JSON.parse(e.target.result);
-      if (!data.guardDays || !Array.isArray(data.guardDays))
-        throw new Error("Formato inválido");
+      if (!data.guardDays || !Array.isArray(data.guardDays)) throw new Error("Formato inválido");
       guardDays = data.guardDays.sort();
       saveData();
       renderGuardDaysList();
@@ -449,7 +402,6 @@ function regenerateGuards() {
   if (!workers.length) return alert("No hay trabajadores.");
   const year = parseInt(document.getElementById("yearSelect").value);
   currentYear = year;
-  // Eliminar guardias del año seleccionado (para regenerar)
   guards = guards.filter((g) => parseInt(g.date.split("-")[0]) !== year);
   const newGuards = generateGuardsForYear(year);
   let maxId = guards.length ? Math.max(...guards.map((g) => g.id)) : 0;
@@ -458,9 +410,7 @@ function regenerateGuards() {
   guards.sort((a, b) => a.date.localeCompare(b.date));
   saveData();
   refreshUI();
-  alert(
-    `Guardias generadas para ${year}. Total laborables: ${newGuards.length}.`,
-  );
+  alert(`Guardias generadas para ${year}. Total laborables: ${newGuards.length}.`);
 }
 
 // ---------- GUARDIAS MANUALES CON BÚSQUEDA ----------
@@ -469,9 +419,7 @@ function openManualModal() {
   const searchInput = document.getElementById("searchWorkerInput");
   if (searchInput) searchInput.value = "";
   renderWorkerSelectForManual("");
-  document.getElementById("manualDate").value = new Date()
-    .toISOString()
-    .split("T")[0];
+  document.getElementById("manualDate").value = new Date().toISOString().split("T")[0];
   document.getElementById("manualCatedra").value = "";
   document.getElementById("manualNotes").value = "";
   document.getElementById("manualModal").style.display = "flex";
@@ -481,9 +429,7 @@ function openManualModal() {
 function renderWorkerSelectForManual(filterText = "") {
   const workerSelect = document.getElementById("manualWorker");
   if (!workerSelect) return;
-  const filtered = workers.filter((w) =>
-    w.name.toLowerCase().includes(filterText.toLowerCase()),
-  );
+  const filtered = workers.filter((w) => w.name.toLowerCase().includes(filterText.toLowerCase()));
   workerSelect.innerHTML = '<option value="">— Sin asignar —</option>';
   if (!filtered.length) {
     const opt = document.createElement("option");
@@ -508,7 +454,6 @@ function saveManualGuard() {
   const catedra = document.getElementById("manualCatedra").value.trim();
   const notes = document.getElementById("manualNotes").value.trim();
   if (!fechaStr) return alert("Selecciona fecha.");
-  // Ya no comprobamos si existe, permitimos duplicados
   const maxId = guards.length ? Math.max(...guards.map((g) => g.id)) : 0;
   guards.push({
     id: maxId + 1,
@@ -531,10 +476,7 @@ function closeManualModal() {
 
 function bindManualSearchEvent() {
   const searchInput = document.getElementById("searchWorkerInput");
-  if (searchInput)
-    searchInput.addEventListener("input", (e) =>
-      renderWorkerSelectForManual(e.target.value),
-    );
+  if (searchInput) searchInput.addEventListener("input", (e) => renderWorkerSelectForManual(e.target.value));
 }
 
 // ---------- ORDENAMIENTO DE TABLA ----------
@@ -544,29 +486,18 @@ function sortGuards(guardsArray) {
     let valA, valB;
     switch (currentSortColumn) {
       case "date":
-        valA = a.date;
-        valB = b.date;
-        break;
+        valA = a.date; valB = b.date; break;
       case "worker":
         const wa = a.workerId ? workers.find((w) => w.id === a.workerId) : null;
         const wb = b.workerId ? workers.find((w) => w.id === b.workerId) : null;
-        valA = wa ? wa.name : "";
-        valB = wb ? wb.name : "";
-        break;
+        valA = wa ? wa.name : ""; valB = wb ? wb.name : ""; break;
       case "completed":
-        valA = a.completed ? 1 : 0;
-        valB = b.completed ? 1 : 0;
-        break;
+        valA = a.completed ? 1 : 0; valB = b.completed ? 1 : 0; break;
       case "catedra":
-        valA = (a.catedra || "").toLowerCase();
-        valB = (b.catedra || "").toLowerCase();
-        break;
+        valA = (a.catedra || "").toLowerCase(); valB = (b.catedra || "").toLowerCase(); break;
       case "notes":
-        valA = (a.notes || "").toLowerCase();
-        valB = (b.notes || "").toLowerCase();
-        break;
-      default:
-        return 0;
+        valA = (a.notes || "").toLowerCase(); valB = (b.notes || "").toLowerCase(); break;
+      default: return 0;
     }
     if (valA < valB) return currentSortOrder === "asc" ? -1 : 1;
     if (valA > valB) return currentSortOrder === "asc" ? 1 : -1;
@@ -580,28 +511,14 @@ function applyFiltersAndRenderTable() {
   const filterMonth = document.getElementById("filterMonth")?.value || "all";
   const filterYear = document.getElementById("filterYear")?.value || "all";
   const filterWorker = document.getElementById("filterWorker")?.value || "all";
-  const filterCatedra =
-    document.getElementById("filterCatedra")?.value || "all";
+  const filterCatedra = document.getElementById("filterCatedra")?.value || "all";
   let filtered = [...guards];
-  if (filterDay !== "all")
-    filtered = filtered.filter(
-      (g) => parseInt(g.date.split("-")[2]) === parseInt(filterDay),
-    );
-  if (filterMonth !== "all")
-    filtered = filtered.filter(
-      (g) => parseInt(g.date.split("-")[1]) === parseInt(filterMonth),
-    );
-  if (filterYear !== "all")
-    filtered = filtered.filter(
-      (g) => parseInt(g.date.split("-")[0]) === parseInt(filterYear),
-    );
-  if (filterWorker === "none") {
-    filtered = filtered.filter((g) => g.workerId == null);
-  } else if (filterWorker !== "all") {
-    filtered = filtered.filter((g) => g.workerId === parseInt(filterWorker));
-  }
-  if (filterCatedra !== "all")
-    filtered = filtered.filter((g) => (g.catedra || "") === filterCatedra);
+  if (filterDay !== "all") filtered = filtered.filter((g) => parseInt(g.date.split("-")[2]) === parseInt(filterDay));
+  if (filterMonth !== "all") filtered = filtered.filter((g) => parseInt(g.date.split("-")[1]) === parseInt(filterMonth));
+  if (filterYear !== "all") filtered = filtered.filter((g) => parseInt(g.date.split("-")[0]) === parseInt(filterYear));
+  if (filterWorker === "none") filtered = filtered.filter((g) => g.workerId == null);
+  else if (filterWorker !== "all") filtered = filtered.filter((g) => g.workerId === parseInt(filterWorker));
+  if (filterCatedra !== "all") filtered = filtered.filter((g) => (g.catedra || "") === filterCatedra);
   filtered = sortGuards(filtered);
   currentFilteredGuards = filtered;
   currentPage = 1;
@@ -615,21 +532,14 @@ function renderGuardsTablePage() {
   const start = (currentPage - 1) * rowsPerPage;
   const pageGuards = currentFilteredGuards.slice(start, start + rowsPerPage);
   if (!pageGuards.length) {
-    tbody.innerHTML =
-      '<tr><td colspan="6">No hay guardias que coincidan.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="6">No hay guardias que coincidan.</td></tr>';
     renderPaginationControls(0);
     return;
   }
   tbody.innerHTML = "";
   for (const guard of pageGuards) {
-    const worker = guard.workerId
-      ? workers.find((w) => w.id === guard.workerId)
-      : null;
-    const workerName = worker
-      ? worker.name
-      : guard.workerId
-        ? "❌ Eliminado"
-        : "Sin asignar";
+    const worker = guard.workerId ? workers.find((w) => w.id === guard.workerId) : null;
+    const workerName = worker ? worker.name : guard.workerId ? "❌ Eliminado" : "Sin asignar";
     const row = tbody.insertRow();
     row.insertCell(0).textContent = formatDate(guard.date);
     row.insertCell(1).textContent = workerName;
@@ -675,16 +585,12 @@ function renderGuardsTablePage() {
 function renderPaginationControls(totalPages) {
   const container = document.getElementById("paginationControls");
   if (!container) return;
-  if (totalPages <= 1) {
-    container.innerHTML = "";
-    return;
-  }
+  if (totalPages <= 1) { container.innerHTML = ""; return; }
   let html = `<button ${currentPage === 1 ? "disabled" : ""} data-page="${currentPage - 1}">◀ Anterior</button>`;
   let start = Math.max(1, currentPage - 3);
   let end = Math.min(totalPages, currentPage + 3);
   if (end - start < 6) start = Math.max(1, end - 6);
-  for (let i = start; i <= end; i++)
-    html += `<button class="${i === currentPage ? "active" : ""}" data-page="${i}">${i}</button>`;
+  for (let i = start; i <= end; i++) html += `<button class="${i === currentPage ? "active" : ""}" data-page="${i}">${i}</button>`;
   html += `<button ${currentPage === totalPages ? "disabled" : ""} data-page="${currentPage + 1}">Siguiente ▶</button>`;
   container.innerHTML = html;
   container.querySelectorAll("button[data-page]").forEach((btn) => {
@@ -721,12 +627,8 @@ function bindSortingEvents() {
   headers.forEach((th, index) => {
     th.addEventListener("click", () => {
       const col = columns[index];
-      if (currentSortColumn === col)
-        currentSortOrder = currentSortOrder === "asc" ? "desc" : "asc";
-      else {
-        currentSortColumn = col;
-        currentSortOrder = "asc";
-      }
+      if (currentSortColumn === col) currentSortOrder = currentSortOrder === "asc" ? "desc" : "asc";
+      else { currentSortColumn = col; currentSortOrder = "asc"; }
       applyFiltersAndRenderTable();
     });
   });
@@ -778,7 +680,6 @@ function saveEditGuard() {
   const newCatedra = document.getElementById("editCatedra").value.trim();
   const newNotes = document.getElementById("editNotes").value.trim();
   if (!newDate) return alert("Selecciona fecha");
-  // Ya no hay lógica de intercambio, simplemente se cambia la fecha
   currentEditingGuard.date = newDate;
   currentEditingGuard.workerId = newWorkerId;
   currentEditingGuard.completed = newCompleted;
@@ -796,42 +697,21 @@ function closeModal() {
   currentEditingGuard = null;
 }
 
-// ---------- CALENDARIO (muestra todas las guardias por día) ----------
+// ---------- CALENDARIO ----------
 function renderCalendar() {
   const container = document.getElementById("calendarGrid");
   if (!container) return;
   const firstDay = new Date(currentCalendarYear, currentCalendarMonth, 1);
   const startWeekDay = firstDay.getDay();
-  const daysInMonth = new Date(
-    currentCalendarYear,
-    currentCalendarMonth + 1,
-    0,
-  ).getDate();
-  const monthNames = [
-    "Enero",
-    "Febrero",
-    "Marzo",
-    "Abril",
-    "Mayo",
-    "Junio",
-    "Julio",
-    "Agosto",
-    "Septiembre",
-    "Octubre",
-    "Noviembre",
-    "Diciembre",
-  ];
-  document.getElementById("currentMonthYear").textContent =
-    `${monthNames[currentCalendarMonth]} ${currentCalendarYear}`;
+  const daysInMonth = new Date(currentCalendarYear, currentCalendarMonth + 1, 0).getDate();
+  const monthNames = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
+  document.getElementById("currentMonthYear").textContent = `${monthNames[currentCalendarMonth]} ${currentCalendarYear}`;
   let grid = "";
-  const weekdays = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
-  weekdays.forEach(
-    (d) => (grid += `<div class="calendar-day-header">${d}</div>`),
-  );
-  for (let i = 0; i < startWeekDay; i++)
-    grid += `<div class="calendar-day-cell calendar-empty"></div>`;
+  const weekdays = ["Dom","Lun","Mar","Mié","Jue","Vie","Sáb"];
+  weekdays.forEach((d) => grid += `<div class="calendar-day-header">${d}</div>`);
+  for (let i = 0; i < startWeekDay; i++) grid += `<div class="calendar-day-cell calendar-empty"></div>`;
   for (let d = 1; d <= daysInMonth; d++) {
-    const dateStr = `${currentCalendarYear}-${String(currentCalendarMonth + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+    const dateStr = `${currentCalendarYear}-${String(currentCalendarMonth + 1).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
     const guardsOfDay = guards.filter((g) => g.date === dateStr);
     let cellClass = "calendar-day-cell";
     if (!guardsOfDay.length) cellClass += " calendar-empty";
@@ -840,9 +720,7 @@ function renderCalendar() {
     if (guardsOfDay.length) {
       grid += `<div style="font-size:0.65rem; display:flex; flex-direction:column; gap:2px; max-height:80px; overflow-y:auto;">`;
       guardsOfDay.forEach((g) => {
-        const worker = g.workerId
-          ? workers.find((w) => w.id === g.workerId)
-          : null;
+        const worker = g.workerId ? workers.find((w) => w.id === g.workerId) : null;
         const name = worker ? worker.name : g.workerId ? "❌" : "Sin asignar";
         const completedClass = g.completed ? "completed" : "";
         grid += `<div class="calendar-day-guard ${completedClass}" style="margin:0; padding:0 0.2rem; background:${g.completed ? "var(--success-light)" : "var(--primary-light)"};">${escapeHtml(name)} ${g.completed ? "✅" : "⏳"}</div>`;
@@ -852,18 +730,14 @@ function renderCalendar() {
     grid += `</div>`;
   }
   container.innerHTML = grid;
-  // Al hacer clic en un día, abrir modal de edición de la primera guardia (o mostrar lista)
   document.querySelectorAll(".calendar-day-cell[data-date]").forEach((cell) => {
     cell.addEventListener("click", () => {
       const date = cell.dataset.date;
       const guardsOfDay = guards.filter((g) => g.date === date);
       if (guardsOfDay.length) {
-        // Si hay varias, podemos mostrar la primera o un selector. Por simplicidad, abrimos la primera.
         openEditModal(guardsOfDay[0]);
       } else {
-        alert(
-          `No hay guardias para ${formatDate(date)}. Puedes añadirla manualmente.`,
-        );
+        alert(`No hay guardias para ${formatDate(date)}. Puedes añadirla manualmente.`);
       }
     });
   });
@@ -872,14 +746,8 @@ function renderCalendar() {
 function changeMonth(delta) {
   let newMonth = currentCalendarMonth + delta;
   let newYear = currentCalendarYear;
-  if (newMonth < 0) {
-    newMonth = 11;
-    newYear--;
-  }
-  if (newMonth > 11) {
-    newMonth = 0;
-    newYear++;
-  }
+  if (newMonth < 0) { newMonth = 11; newYear--; }
+  if (newMonth > 11) { newMonth = 0; newYear++; }
   currentCalendarYear = newYear;
   currentCalendarMonth = newMonth;
   renderCalendar();
@@ -903,20 +771,16 @@ function renderSummary() {
   const sinAsignar = guards.filter((g) => g.workerId == null).length;
 
   let filteredWorkers = [...workers];
-  if (filterValue === "noGuards")
-    filteredWorkers = workers.filter(
-      (w) => !guards.some((g) => g.workerId === w.id),
-    );
-  else if (filterValue === "noCompleted")
-    filteredWorkers = workers.filter((w) => {
-      const wg = guards.filter((g) => g.workerId === w.id);
-      return wg.length && wg.every((g) => !g.completed);
-    });
+  if (filterValue === "noGuards") filteredWorkers = workers.filter((w) => !guards.some((g) => g.workerId === w.id));
+  else if (filterValue === "noCompleted") filteredWorkers = workers.filter((w) => {
+    const wg = guards.filter((g) => g.workerId === w.id);
+    return wg.length && wg.every((g) => !g.completed);
+  });
 
   let html = `<div class="stat-card" style="background:#e6f7f0;">
                 <h3>📊 Guardias Totales</h3>
                 <p>${completedTotal}/${total}</p>
-                <div style="font-size:0.85rem;">${Math.round((completedTotal / total) * 100)}% completado</div>
+                <div style="font-size:0.85rem;">${Math.round((completedTotal/total)*100)}% completado</div>
                 ${sinAsignar > 0 ? `<div style="color:var(--gray-600); font-size:0.85rem;">⚠️ ${sinAsignar} guardias sin asignar</div>` : ""}
               </div>`;
 
@@ -931,35 +795,22 @@ function renderSummary() {
       const wg = guards.filter((g) => g.workerId === w.id);
       const assigned = wg.length;
       const completed = wg.filter((g) => g.completed).length;
-      const percent = assigned ? Math.round((completed / assigned) * 100) : 0;
+      const percent = assigned ? Math.round((completed/assigned)*100) : 0;
       html += `<div class="stat-card"><h3>👤 ${escapeHtml(w.name)}</h3><p>${completed}/${assigned}</p><div style="font-size:0.85rem;">${percent}% completado</div></div>`;
     }
   } else {
     html += `<p style="grid-column:1/-1; text-align:center; color:var(--gray-600);">No hay trabajadores definidos.</p>`;
   }
-
   container.innerHTML = html;
 }
 
 // ---------- EXPORTAR/IMPORTAR COMPLETO ----------
 function exportToJSON() {
-  let fileName = prompt(
-    "Nombre del archivo:",
-    `guardias_sindicato_${currentYear}`,
-  );
+  let fileName = prompt("Nombre del archivo:", `guardias_sindicato_${currentYear}`);
   if (!fileName) return;
   if (!fileName.endsWith(".json")) fileName += ".json";
-  const exportData = {
-    workers,
-    guards,
-    guardDays,
-    currentYear,
-    lastWorkerIndexForDays,
-    exportDate: new Date().toISOString(),
-  };
-  const blob = new Blob([JSON.stringify(exportData, null, 2)], {
-    type: "application/json",
-  });
+  const exportData = { workers, guards, guardDays, currentYear, lastWorkerIndexForDays, exportDate: new Date().toISOString() };
+  const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: "application/json" });
   const a = document.createElement("a");
   a.download = fileName;
   a.href = URL.createObjectURL(blob);
@@ -972,14 +823,9 @@ function importFromJSON(file) {
   reader.onload = (e) => {
     try {
       const data = JSON.parse(e.target.result);
-      if (!data.workers || !data.guards || data.currentYear === undefined)
-        throw new Error("Formato inválido");
+      if (!data.workers || !data.guards || data.currentYear === undefined) throw new Error("Formato inválido");
       workers = data.workers;
-      guards = data.guards.map((g) => ({
-        ...g,
-        catedra: g.catedra || "",
-        notes: g.notes || "",
-      }));
+      guards = data.guards.map((g) => ({ ...g, catedra: g.catedra || "", notes: g.notes || "" }));
       currentYear = data.currentYear;
       guardDays = data.guardDays || [];
       lastWorkerIndexForDays = data.lastWorkerIndexForDays || 0;
@@ -996,26 +842,12 @@ function importFromJSON(file) {
 
 function exportToCSV() {
   if (!guards.length) return alert("No hay guardias.");
-  const rows = [["Fecha", "Trabajador", "Realizada", "Cátedra", "Notas"]];
-  [...guards]
-    .sort((a, b) => a.date.localeCompare(b.date))
-    .forEach((g) => {
-      const worker = g.workerId
-        ? workers.find((w) => w.id === g.workerId)
-        : null;
-      const nombre = worker
-        ? worker.name
-        : g.workerId
-          ? "Desconocido"
-          : "Sin asignar";
-      rows.push([
-        formatDate(g.date),
-        nombre,
-        g.completed ? "Sí" : "No",
-        g.catedra || "",
-        g.notes || "",
-      ]);
-    });
+  const rows = [["Fecha","Trabajador","Realizada","Cátedra","Notas"]];
+  [...guards].sort((a,b) => a.date.localeCompare(b.date)).forEach((g) => {
+    const worker = g.workerId ? workers.find((w) => w.id === g.workerId) : null;
+    const nombre = worker ? worker.name : g.workerId ? "Desconocido" : "Sin asignar";
+    rows.push([formatDate(g.date), nombre, g.completed ? "Sí" : "No", g.catedra || "", g.notes || ""]);
+  });
   const csv = rows.map((r) => r.join(",")).join("\n");
   const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
   const a = document.createElement("a");
@@ -1051,6 +883,44 @@ function setView(view) {
   }
 }
 
+// ---------- NAVEGACIÓN ENTRE VISTAS ----------
+function setActiveView(view) {
+  document.getElementById('viewGestion').style.display = 'none';
+  document.getElementById('viewReportes').style.display = 'none';
+  document.getElementById('viewConfig').style.display = 'none';
+  document.getElementById(`view${view}`).style.display = 'block';
+
+  const navBtns = document.querySelectorAll('.main-nav .btn');
+  navBtns.forEach(btn => btn.classList.remove('active', 'primary'));
+  navBtns.forEach(btn => btn.classList.add('outline'));
+
+  const activeBtn = document.getElementById(`nav${view}`);
+  if (activeBtn) {
+    activeBtn.classList.remove('outline');
+    activeBtn.classList.add('active', 'primary');
+  }
+
+  if (view === 'Reportes') {
+    renderSummary();
+  }
+  if (view === 'Gestion') {
+    if (currentView === 'table') {
+      document.getElementById('tableViewSection').style.display = 'block';
+      document.getElementById('calendarViewSection').style.display = 'none';
+      applyFiltersAndRenderTable();
+    } else {
+      document.getElementById('tableViewSection').style.display = 'none';
+      document.getElementById('calendarViewSection').style.display = 'block';
+      renderCalendar();
+    }
+  }
+}
+
+// ---------- EXPORTAR A PDF ----------
+function exportToPdf() {
+  window.print();
+}
+
 // ---------- LIMPIEZA Y EJEMPLO ----------
 function clearAllData() {
   if (confirm("⚠️ Eliminará TODOS los datos. ¿Continuar?")) {
@@ -1070,19 +940,14 @@ function updateFilterWorkerSelect() {
   const select = document.getElementById("filterWorker");
   if (!select) return;
   const currentVal = select.value;
-  select.innerHTML =
-    '<option value="all">Todos los trabajadores</option><option value="none">Sin asignar</option>';
+  select.innerHTML = '<option value="all">Todos los trabajadores</option><option value="none">Sin asignar</option>';
   workers.forEach((w) => {
     const opt = document.createElement("option");
     opt.value = w.id;
     opt.textContent = w.name;
     select.appendChild(opt);
   });
-  if (
-    currentVal !== "all" &&
-    currentVal !== "none" &&
-    workers.some((w) => w.id == currentVal)
-  ) {
+  if (currentVal !== "all" && currentVal !== "none" && workers.some((w) => w.id == currentVal)) {
     select.value = currentVal;
   } else {
     select.value = "all";
@@ -1092,9 +957,7 @@ function updateFilterWorkerSelect() {
 function updateFilterYearSelect() {
   const select = document.getElementById("filterYear");
   if (!select) return;
-  const years = [
-    ...new Set(guards.map((g) => parseInt(g.date.split("-")[0]))),
-  ].sort((a, b) => a - b);
+  const years = [...new Set(guards.map((g) => parseInt(g.date.split("-")[0])))].sort((a,b) => a-b);
   const currentVal = select.value;
   select.innerHTML = '<option value="all">Todos los años</option>';
   years.forEach((y) => {
@@ -1103,21 +966,14 @@ function updateFilterYearSelect() {
     opt.textContent = y;
     select.appendChild(opt);
   });
-  select.value =
-    currentVal !== "all" && years.includes(parseInt(currentVal))
-      ? currentVal
-      : "all";
+  select.value = currentVal !== "all" && years.includes(parseInt(currentVal)) ? currentVal : "all";
 }
 
 function updateFilterCatedraSelect() {
   const select = document.getElementById("filterCatedra");
   if (!select) return;
   const currentVal = select.value;
-  const valores = [
-    ...new Set(
-      guards.map((g) => g.catedra).filter((c) => c && c.trim() !== ""),
-    ),
-  ].sort();
+  const valores = [...new Set(guards.map((g) => g.catedra).filter((c) => c && c.trim() !== ""))].sort();
   select.innerHTML = '<option value="all">Todas las cátedras</option>';
   valores.forEach((c) => {
     const opt = document.createElement("option");
@@ -1149,51 +1005,29 @@ function refreshUI() {
 // ---------- EVENTOS ----------
 function bindEvents() {
   document.getElementById("addWorkerBtn")?.addEventListener("click", addWorker);
-  document
-    .getElementById("clearAllDataBtn")
-    ?.addEventListener("click", clearAllData);
-  document
-    .getElementById("addGuardDayBtn")
-    ?.addEventListener("click", addGuardDay);
-  document
-    .getElementById("generateFromDaysBtn")
-    ?.addEventListener("click", generateGuardsFromDays);
-  document
-    .getElementById("exportDaysBtn")
-    ?.addEventListener("click", exportDaysToJSON);
-  document
-    .getElementById("importDaysInput")
-    ?.addEventListener("change", (e) => {
-      if (e.target.files[0]) importDaysFromJSON(e.target.files[0]);
-      e.target.value = "";
-    });
-  document
-    .getElementById("generateBtn")
-    ?.addEventListener("click", regenerateGuards);
-  document
-    .getElementById("addManualGuardBtn")
-    ?.addEventListener("click", openManualModal);
-  document
-    .getElementById("exportDataBtn")
-    ?.addEventListener("click", exportToJSON);
-  document
-    .getElementById("exportCsvBtn")
-    ?.addEventListener("click", exportToCSV);
-  document
-    .getElementById("importFileInput")
-    ?.addEventListener("change", (e) => {
-      if (e.target.files[0]) importFromJSON(e.target.files[0]);
-      e.target.value = "";
-    });
-  document
-    .getElementById("resetAllChecksBtn")
-    ?.addEventListener("click", () => {
-      if (guards.length && confirm("Desmarcar todas?")) {
-        guards.forEach((g) => (g.completed = false));
-        saveData();
-        refreshUI();
-      }
-    });
+  document.getElementById("clearAllDataBtn")?.addEventListener("click", clearAllData);
+  document.getElementById("addGuardDayBtn")?.addEventListener("click", addGuardDay);
+  document.getElementById("generateFromDaysBtn")?.addEventListener("click", generateGuardsFromDays);
+  document.getElementById("exportDaysBtn")?.addEventListener("click", exportDaysToJSON);
+  document.getElementById("importDaysInput")?.addEventListener("change", (e) => {
+    if (e.target.files[0]) importDaysFromJSON(e.target.files[0]);
+    e.target.value = "";
+  });
+  document.getElementById("generateBtn")?.addEventListener("click", regenerateGuards);
+  document.getElementById("addManualGuardBtn")?.addEventListener("click", openManualModal);
+  document.getElementById("exportDataBtn")?.addEventListener("click", exportToJSON);
+  document.getElementById("exportCsvBtn")?.addEventListener("click", exportToCSV);
+  document.getElementById("importFileInput")?.addEventListener("change", (e) => {
+    if (e.target.files[0]) importFromJSON(e.target.files[0]);
+    e.target.value = "";
+  });
+  document.getElementById("resetAllChecksBtn")?.addEventListener("click", () => {
+    if (guards.length && confirm("Desmarcar todas?")) {
+      guards.forEach((g) => (g.completed = false));
+      saveData();
+      refreshUI();
+    }
+  });
   document.getElementById("clearFiltersBtn")?.addEventListener("click", () => {
     document.getElementById("filterDay").value = "all";
     document.getElementById("filterMonth").value = "all";
@@ -1202,61 +1036,25 @@ function bindEvents() {
     document.getElementById("filterCatedra").value = "all";
     applyFiltersAndRenderTable();
   });
-  document
-    .getElementById("filterDay")
-    ?.addEventListener("change", applyFiltersAndRenderTable);
-  document
-    .getElementById("filterMonth")
-    ?.addEventListener("change", applyFiltersAndRenderTable);
-  document
-    .getElementById("filterYear")
-    ?.addEventListener("change", applyFiltersAndRenderTable);
-  document
-    .getElementById("filterWorker")
-    ?.addEventListener("change", applyFiltersAndRenderTable);
-  document
-    .getElementById("filterCatedra")
-    ?.addEventListener("change", applyFiltersAndRenderTable);
-  document
-    .getElementById("summaryFilter")
-    ?.addEventListener("change", renderSummary);
-  document
-    .getElementById("tableViewBtn")
-    ?.addEventListener("click", () => setView("table"));
-  document
-    .getElementById("calendarViewBtn")
-    ?.addEventListener("click", () => setView("calendar"));
-  document
-    .getElementById("prevMonthBtn")
-    ?.addEventListener("click", () => changeMonth(-1));
-  document
-    .getElementById("nextMonthBtn")
-    ?.addEventListener("click", () => changeMonth(1));
-  document
-    .getElementById("saveEditBtn")
-    ?.addEventListener("click", saveEditGuard);
-  document
-    .getElementById("cancelEditBtn")
-    ?.addEventListener("click", closeModal);
+  document.getElementById("filterDay")?.addEventListener("change", applyFiltersAndRenderTable);
+  document.getElementById("filterMonth")?.addEventListener("change", applyFiltersAndRenderTable);
+  document.getElementById("filterYear")?.addEventListener("change", applyFiltersAndRenderTable);
+  document.getElementById("filterWorker")?.addEventListener("change", applyFiltersAndRenderTable);
+  document.getElementById("filterCatedra")?.addEventListener("change", applyFiltersAndRenderTable);
+  document.getElementById("summaryFilter")?.addEventListener("change", renderSummary);
+  document.getElementById("tableViewBtn")?.addEventListener("click", () => setView("table"));
+  document.getElementById("calendarViewBtn")?.addEventListener("click", () => setView("calendar"));
+  document.getElementById("prevMonthBtn")?.addEventListener("click", () => changeMonth(-1));
+  document.getElementById("nextMonthBtn")?.addEventListener("click", () => changeMonth(1));
+  document.getElementById("saveEditBtn")?.addEventListener("click", saveEditGuard);
+  document.getElementById("cancelEditBtn")?.addEventListener("click", closeModal);
   document.querySelector(".close")?.addEventListener("click", closeModal);
-  document
-    .getElementById("saveManualBtn")
-    ?.addEventListener("click", saveManualGuard);
-  document
-    .getElementById("cancelManualBtn")
-    ?.addEventListener("click", closeManualModal);
-  document
-    .querySelector(".close-manual")
-    ?.addEventListener("click", closeManualModal);
-  document
-    .getElementById("saveDayEditBtn")
-    ?.addEventListener("click", saveDayEdit);
-  document
-    .getElementById("cancelDayEditBtn")
-    ?.addEventListener("click", closeDayModal);
-  document
-    .querySelector(".close-day")
-    ?.addEventListener("click", closeDayModal);
+  document.getElementById("saveManualBtn")?.addEventListener("click", saveManualGuard);
+  document.getElementById("cancelManualBtn")?.addEventListener("click", closeManualModal);
+  document.querySelector(".close-manual")?.addEventListener("click", closeManualModal);
+  document.getElementById("saveDayEditBtn")?.addEventListener("click", saveDayEdit);
+  document.getElementById("cancelDayEditBtn")?.addEventListener("click", closeDayModal);
+  document.querySelector(".close-day")?.addEventListener("click", closeDayModal);
   window.addEventListener("click", (e) => {
     if (e.target === document.getElementById("editModal")) closeModal();
     if (e.target === document.getElementById("manualModal")) closeManualModal();
@@ -1265,20 +1063,25 @@ function bindEvents() {
   document.getElementById("workerName")?.addEventListener("keypress", (e) => {
     if (e.key === "Enter") addWorker();
   });
-  document
-    .getElementById("exportWorkersBtn")
-    ?.addEventListener("click", exportWorkers);
-  document
-    .getElementById("importWorkersInput")
-    ?.addEventListener("change", handleImportWorkers);
+  document.getElementById("exportWorkersBtn")?.addEventListener("click", exportWorkers);
+  document.getElementById("importWorkersInput")?.addEventListener("change", handleImportWorkers);
   bindManualSearchEvent();
+
+  // Navegación
+  document.getElementById("navGestion")?.addEventListener("click", () => setActiveView("Gestion"));
+  document.getElementById("navReportes")?.addEventListener("click", () => setActiveView("Reportes"));
+  document.getElementById("navConfig")?.addEventListener("click", () => setActiveView("Config"));
+
+  // Exportar PDF
+  document.getElementById("exportPdfGestionBtn")?.addEventListener("click", exportToPdf);
+  document.getElementById("exportPdfReportesBtn")?.addEventListener("click", exportToPdf);
 }
 
 // ---------- INICIO ----------
 function init() {
   loadData();
   bindEvents();
-  refreshUI();
+  setActiveView("Gestion");
   setView("table");
 }
 init();
