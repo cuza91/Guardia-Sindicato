@@ -1210,18 +1210,27 @@ function isAdmin() {
 
 function applyRoleBasedUI() {
   const isAdminUser = isAdmin();
+  // Ocultar pestaña de Reportes si no es admin
+  const navReportes = document.getElementById('navReportes');
+  if (navReportes) {
+    navReportes.style.display = isAdminUser ? '' : 'none';
+  }
+  // Ocultar Configuración si no es admin
   const navConfig = document.getElementById('navConfig');
   if (navConfig) {
     navConfig.style.display = isAdminUser ? '' : 'none';
   }
+  // Ocultar botón añadir manual si no es admin
   const addManualContainer = document.getElementById('addManualContainer');
   if (addManualContainer) {
     addManualContainer.style.display = isAdminUser ? '' : 'none';
   }
+  // Mostrar solo el nombre de usuario, sin el rol
   const userInfo = document.getElementById('userInfo');
-  if (userInfo) {
-    userInfo.textContent = `👤 ${currentUser.username} (${currentUser.role})`;
+  if (userInfo && currentUser) {
+    userInfo.textContent = `👤 ${currentUser.username}`;
   }
+  // Ocultar filtro de trabajador para workers
   const filterWorker = document.getElementById('filterWorker');
   if (filterWorker && !isAdminUser) {
     filterWorker.style.display = 'none';
@@ -1331,6 +1340,16 @@ function bindEvents() {
     if (e.key === "Enter") handleLogin();
   });
   document.getElementById("logoutBtn")?.addEventListener("click", logout);
+
+  // Mostrar/ocultar contraseña
+  document.getElementById("showPasswordCheckbox")?.addEventListener("change", function() {
+    const passwordInput = document.getElementById("loginPassword");
+    if (this.checked) {
+      passwordInput.type = "text";
+    } else {
+      passwordInput.type = "password";
+    }
+  });
 }
 
 function handleLogin() {
@@ -1376,6 +1395,9 @@ async function loadUsers() {
     USERS = [
       { id: 1, username: 'admin', password: 'admin123', role: 'admin', workerId: null },
       { id: 2, username: 'miguel', password: '1234', role: 'worker', workerId: 1781469978315 },
+      { id: 3, username: 'kenia', password: '1234', role: 'worker', workerId: 1781469978317 },
+      { id: 4, username: 'rene', password: '1234', role: 'worker', workerId: 1781469978316 },
+      { id: 5, username: 'bertha', password: '1234', role: 'worker', workerId: 1781469978318 }
     ];
     alert('⚠️ No se pudo cargar users.json. Usando usuarios por defecto.');
   }
@@ -1400,7 +1422,7 @@ async function init() {
     // No mostramos nada hasta login
   }
 
-  // 🔥 Siempre vincular eventos (incluidos los del login)
+  // Siempre vincular eventos (incluidos los del login)
   bindEvents();
 }
 
