@@ -699,7 +699,6 @@ small {
 
 /* ===== ESTILOS DE IMPRESIÓN ===== */
 @media print {
-  /* Ocultar elementos comunes */
   .main-nav,
   .view-toggle,
   .btn,
@@ -724,7 +723,6 @@ small {
     display: none !important;
   }
 
-  /* Mostrar solo la vista activa */
   .view-section {
     display: none !important;
   }
@@ -732,7 +730,6 @@ small {
     display: block !important;
   }
 
-  /* En gestión, mostrar solo la subvista activa (tabla o calendario) */
   #viewGestion.view-table #calendarViewSection {
     display: none !important;
   }
@@ -740,13 +737,11 @@ small {
     display: none !important;
   }
 
-  /* Ocultar columna de acciones en la tabla */
   #guardsTable th:last-child,
   #guardsTable td:last-child {
     display: none !important;
   }
 
-  /* Ajustes de estilo para impresión */
   .table-wrapper {
     border: none !important;
     box-shadow: none !important;

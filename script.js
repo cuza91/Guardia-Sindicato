@@ -54,6 +54,7 @@ function loadData() {
   updateFilterWorkerSelect();
   updateFilterYearSelect();
   updateFilterCatedraSelect();
+  updateReportYearFilter();
 }
 
 // ---------- UTILS ----------
@@ -753,55 +754,127 @@ function changeMonth(delta) {
   renderCalendar();
 }
 
-// ---------- RESUMEN ----------
-function renderSummary() {
-  const container = document.getElementById("summaryStats");
-  if (!container) return;
-  const filterValue = document.getElementById("summaryFilter")?.value || "all";
-  if (!workers.length && !guards.length) {
-    container.innerHTML = "<p>No hay trabajadores ni guardias.</p>";
-    return;
-  }
-  if (!guards.length) {
-    container.innerHTML = "<p>No hay guardias generadas.</p>";
-    return;
-  }
-  const total = guards.length;
-  const completedTotal = guards.filter((g) => g.completed).length;
-  const sinAsignar = guards.filter((g) => g.workerId == null).length;
-
-  let filteredWorkers = [...workers];
-  if (filterValue === "noGuards") filteredWorkers = workers.filter((w) => !guards.some((g) => g.workerId === w.id));
-  else if (filterValue === "noCompleted") filteredWorkers = workers.filter((w) => {
-    const wg = guards.filter((g) => g.workerId === w.id);
-    return wg.length && wg.every((g) => !g.completed);
+// ---------- REPORTES: FILTROS Y ESTADÍSTICAS ----------
+function updateReportYearFilter() {
+  const select = document.getElementById('reportYear');
+  if (!select) return;
+  const years = [...new Set(guards.map(g => parseInt(g.date.split('-')[0])))].sort((a,b) => a-b);
+  const currentVal = select.value;
+  select.innerHTML = '<option value="all">Todos</option>';
+  years.forEach(y => {
+    const opt = document.createElement('option');
+    opt.value = y;
+    opt.textContent = y;
+    select.appendChild(opt);
   });
+  if (currentVal !== 'all' && years.includes(parseInt(currentVal))) {
+    select.value = currentVal;
+  } else {
+    select.value = 'all';
+  }
+}
+
+function getFilteredGuardsForReport() {
+  let filtered = [...guards];
+  const year = document.getElementById('reportYear')?.value || 'all';
+  const month = document.getElementById('reportMonth')?.value || 'all';
+  if (year !== 'all') {
+    filtered = filtered.filter(g => parseInt(g.date.split('-')[0]) === parseInt(year));
+  }
+  if (month !== 'all') {
+    filtered = filtered.filter(g => parseInt(g.date.split('-')[1]) === parseInt(month));
+  }
+  return filtered;
+}
+
+function renderSummary() {
+  const container = document.getElementById('summaryStats');
+  const catedraContainer = document.getElementById('catedraStats');
+  if (!container || !catedraContainer) return;
+
+  const filterValue = document.getElementById('summaryFilter')?.value || 'all';
+  const filteredGuards = getFilteredGuardsForReport();
+
+  if (!workers.length && !filteredGuards.length) {
+    container.innerHTML = "<p>No hay trabajadores ni guardias para el período seleccionado.</p>";
+    catedraContainer.innerHTML = "<p>No hay datos.</p>";
+    return;
+  }
+  if (!filteredGuards.length) {
+    container.innerHTML = "<p>No hay guardias para el período seleccionado.</p>";
+    catedraContainer.innerHTML = "<p>No hay datos.</p>";
+    return;
+  }
+
+  const total = filteredGuards.length;
+  const completedTotal = filteredGuards.filter(g => g.completed).length;
+  const sinAsignar = filteredGuards.filter(g => g.workerId == null).length;
+
+  // Seguimiento por trabajador
+  let filteredWorkers = [...workers];
+  if (filterValue === 'noGuards') {
+    filteredWorkers = workers.filter(w => !filteredGuards.some(g => g.workerId === w.id));
+  } else if (filterValue === 'noCompleted') {
+    filteredWorkers = workers.filter(w => {
+      const wg = filteredGuards.filter(g => g.workerId === w.id);
+      return wg.length && wg.every(g => !g.completed);
+    });
+  }
 
   let html = `<div class="stat-card" style="background:#e6f7f0;">
-                <h3>📊 Guardias Totales</h3>
+                <h3>📊 Guardias Totales (período)</h3>
                 <p>${completedTotal}/${total}</p>
                 <div style="font-size:0.85rem;">${Math.round((completedTotal/total)*100)}% completado</div>
-                ${sinAsignar > 0 ? `<div style="color:var(--gray-600); font-size:0.85rem;">⚠️ ${sinAsignar} guardias sin asignar</div>` : ""}
+                ${sinAsignar > 0 ? `<div style="color:var(--gray-600); font-size:0.85rem;">⚠️ ${sinAsignar} guardias sin asignar</div>` : ''}
               </div>`;
 
-  if (!filteredWorkers.length && filterValue !== "all") {
+  if (!filteredWorkers.length && filterValue !== 'all') {
     html += "<p>No hay trabajadores que coincidan con el filtro.</p>";
-    container.innerHTML = html;
-    return;
-  }
-
-  if (workers.length > 0) {
-    for (const w of filteredWorkers) {
-      const wg = guards.filter((g) => g.workerId === w.id);
+  } else {
+    let workersToShow = filteredWorkers;
+    if (filterValue === 'all') {
+      workersToShow = workers.filter(w => filteredGuards.some(g => g.workerId === w.id));
+      if (workersToShow.length === 0) {
+        html += `<p style="grid-column:1/-1; text-align:center; color:var(--gray-600);">Ningún trabajador tiene guardias en el período seleccionado.</p>`;
+      }
+    }
+    for (const w of workersToShow) {
+      const wg = filteredGuards.filter(g => g.workerId === w.id);
       const assigned = wg.length;
-      const completed = wg.filter((g) => g.completed).length;
+      const completed = wg.filter(g => g.completed).length;
       const percent = assigned ? Math.round((completed/assigned)*100) : 0;
       html += `<div class="stat-card"><h3>👤 ${escapeHtml(w.name)}</h3><p>${completed}/${assigned}</p><div style="font-size:0.85rem;">${percent}% completado</div></div>`;
     }
-  } else {
-    html += `<p style="grid-column:1/-1; text-align:center; color:var(--gray-600);">No hay trabajadores definidos.</p>`;
   }
   container.innerHTML = html;
+
+  // Estadísticas por cátedra
+  const catedraMap = new Map();
+  filteredGuards.forEach(g => {
+    const catedra = g.catedra || 'Sin cátedra';
+    if (!catedraMap.has(catedra)) {
+      catedraMap.set(catedra, { total: 0, completed: 0 });
+    }
+    const stats = catedraMap.get(catedra);
+    stats.total++;
+    if (g.completed) stats.completed++;
+  });
+
+  let catedraHtml = '';
+  if (catedraMap.size === 0) {
+    catedraHtml = '<p>No hay cátedras definidas en las guardias.</p>';
+  } else {
+    const sorted = Array.from(catedraMap.entries()).sort((a, b) => b[1].total - a[1].total);
+    for (const [catedra, stats] of sorted) {
+      const percent = stats.total ? Math.round((stats.completed/stats.total)*100) : 0;
+      catedraHtml += `<div class="stat-card" style="border-left-color: var(--success);">
+                        <h3>🏛️ ${escapeHtml(catedra)}</h3>
+                        <p>${stats.completed}/${stats.total}</p>
+                        <div style="font-size:0.85rem;">${percent}% realizadas</div>
+                      </div>`;
+    }
+  }
+  catedraContainer.innerHTML = catedraHtml;
 }
 
 // ---------- EXPORTAR/IMPORTAR COMPLETO ----------
@@ -891,20 +964,16 @@ function setView(view) {
 
 // ---------- NAVEGACIÓN ENTRE VISTAS ----------
 function setActiveView(view) {
-  // Ocultar todas
   document.getElementById('viewGestion').style.display = 'none';
   document.getElementById('viewReportes').style.display = 'none';
   document.getElementById('viewConfig').style.display = 'none';
 
-  // Mostrar la seleccionada
   const activeView = document.getElementById(`view${view}`);
   activeView.style.display = 'block';
 
-  // Quitar clase active-view de todas y ponerla en la activa
   document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active-view'));
   activeView.classList.add('active-view');
 
-  // Actualizar botones del menú
   const navBtns = document.querySelectorAll('.main-nav .btn');
   navBtns.forEach(btn => btn.classList.remove('active', 'primary'));
   navBtns.forEach(btn => btn.classList.add('outline'));
@@ -1014,6 +1083,7 @@ function refreshUI() {
   updateFilterWorkerSelect();
   updateFilterYearSelect();
   updateFilterCatedraSelect();
+  updateReportYearFilter();
   document.getElementById("yearSelect").value = currentYear;
 }
 
@@ -1090,6 +1160,11 @@ function bindEvents() {
   // Exportar PDF
   document.getElementById("exportPdfGestionBtn")?.addEventListener("click", exportToPdf);
   document.getElementById("exportPdfReportesBtn")?.addEventListener("click", exportToPdf);
+
+  // Filtros de reportes
+  document.getElementById("applyReportFiltersBtn")?.addEventListener("click", renderSummary);
+  document.getElementById("reportYear")?.addEventListener("change", renderSummary);
+  document.getElementById("reportMonth")?.addEventListener("change", renderSummary);
 }
 
 // ---------- INICIO ----------

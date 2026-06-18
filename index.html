@@ -154,10 +154,37 @@
               🖨️ Exportar a PDF
             </button>
           </h2>
+          <!-- Filtros para reportes -->
+          <div class="filters-bar" style="margin-bottom:1.5rem;">
+            <div class="form-row">
+              <label for="reportYear">Año:</label>
+              <select id="reportYear" style="flex:1;">
+                <option value="all">Todos</option>
+              </select>
+              <label for="reportMonth">Mes:</label>
+              <select id="reportMonth" style="flex:1;">
+                <option value="all">Todos</option>
+                <option value="1">Enero</option>
+                <option value="2">Febrero</option>
+                <option value="3">Marzo</option>
+                <option value="4">Abril</option>
+                <option value="5">Mayo</option>
+                <option value="6">Junio</option>
+                <option value="7">Julio</option>
+                <option value="8">Agosto</option>
+                <option value="9">Septiembre</option>
+                <option value="10">Octubre</option>
+                <option value="11">Noviembre</option>
+                <option value="12">Diciembre</option>
+              </select>
+              <button id="applyReportFiltersBtn" class="btn primary">Aplicar filtros</button>
+            </div>
+          </div>
+
           <div class="summary-section">
             <h3>Seguimiento por trabajador</h3>
             <div class="form-row">
-              <label for="summaryFilter">Filtrar:</label>
+              <label for="summaryFilter">Filtrar trabajadores:</label>
               <select id="summaryFilter" style="flex: 2">
                 <option value="all">Todos los trabajadores</option>
                 <option value="noGuards">Sin guardias asignadas</option>
@@ -166,6 +193,14 @@
             </div>
             <div id="summaryStats" class="stats-container">
               <p>Genera guardias para ver estadísticas.</p>
+            </div>
+          </div>
+
+          <!-- Estadísticas por cátedra -->
+          <div class="summary-section" style="margin-top:2rem; border-top:1px solid var(--gray-300); padding-top:1.5rem;">
+            <h3>📚 Estadísticas por Cátedra</h3>
+            <div id="catedraStats" class="stats-container">
+              <p>No hay datos.</p>
             </div>
           </div>
         </section>
@@ -241,7 +276,7 @@
       </div>
     </div>
 
-    <!-- MODAL EDITAR GUARDIA -->
+    <!-- MODALES (sin cambios) -->
     <div id="editModal" class="modal" style="display: none">
       <div class="modal-content">
         <span class="close">&times;</span>
@@ -275,7 +310,6 @@
       </div>
     </div>
 
-    <!-- MODAL AÑADIR MANUAL -->
     <div id="manualModal" class="modal" style="display: none">
       <div class="modal-content">
         <span class="close-manual">&times;</span>
@@ -310,7 +344,6 @@
       </div>
     </div>
 
-    <!-- MODAL EDITAR DÍA DEFINIDO -->
     <div id="editDayModal" class="modal" style="display: none">
       <div class="modal-content">
         <span class="close-day">&times;</span>
