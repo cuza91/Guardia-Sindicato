@@ -963,16 +963,24 @@ function renderSummary() {
         html += `<p style="grid-column:1/-1; text-align:center; color:var(--gray-600);">Ningún trabajador tiene guardias en el período seleccionado.</p>`;
       }
     }
-    for (const w of workersToShow) {
+    
+    // Ordenar los trabajadores por cantidad de guardias (descendente)
+    const workersWithCount = workersToShow.map(w => {
       const wg = filteredGuards.filter(g => g.workerId === w.id);
-      const assigned = wg.length;
-      const completed = wg.filter(g => g.completed).length;
-      const percent = assigned ? Math.round((completed/assigned)*100) : 0;
-      html += `<div class="stat-card"><h3>👤 ${escapeHtml(w.name)}</h3><p>${completed}/${assigned}</p><div style="font-size:0.85rem;">${percent}% completado</div></div>`;
+      return { worker: w, count: wg.length, completed: wg.filter(g => g.completed).length };
+    });
+    workersWithCount.sort((a, b) => b.count - a.count); // mayor a menor
+
+    for (const { worker: w, count: assigned, completed } of workersWithCount) {
+      const percent = assigned ? Math.round((completed / assigned) * 100) : 0;
+      html += `<div class="stat-card"><h3>👤 ${escapeHtml(w.name)}</h3>
+               <p>${completed}/${assigned}</p>
+               <div style="font-size:0.85rem;">${percent}% completado</div></div>`;
     }
   }
   container.innerHTML = html;
 
+  // Estadísticas por cátedra (sin cambios)
   const catedraMap = new Map();
   filteredGuards.forEach(g => {
     const catedra = g.catedra || 'Sin cátedra';
@@ -990,7 +998,7 @@ function renderSummary() {
   } else {
     const sorted = Array.from(catedraMap.entries()).sort((a, b) => b[1].total - a[1].total);
     for (const [catedra, stats] of sorted) {
-      const percent = stats.total ? Math.round((stats.completed/stats.total)*100) : 0;
+      const percent = stats.total ? Math.round((stats.completed / stats.total) * 100) : 0;
       catedraHtml += `<div class="stat-card" style="border-left-color: var(--success);">
                         <h3>🏛️ ${escapeHtml(catedra)}</h3>
                         <p>${stats.completed}/${stats.total}</p>
