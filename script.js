@@ -25,9 +25,13 @@ const STORAGE_GUARDS = "sindicato_guards";
 const STORAGE_YEAR = "sindicato_year";
 const STORAGE_DAYS = "sindicato_guardDays";
 const STORAGE_LAST_INDEX = "sindicato_lastIndexDays";
+const STORAGE_SESSION = "sindicato_session";
 
 let currentEditingGuard = null;
 let currentEditingDay = null;
+
+// ---------- USUARIOS (cargados desde JSON externo) ----------
+let USERS = [];
 
 // ---------- FUNCIONES DE PERSISTENCIA ----------
 function saveData() {
@@ -55,6 +59,47 @@ function loadData() {
   updateFilterYearSelect();
   updateFilterCatedraSelect();
   updateReportYearFilter();
+}
+
+// ---------- SESIÓN ----------
+function loadSession() {
+  const sessionStr = localStorage.getItem(STORAGE_SESSION);
+  if (sessionStr) {
+    try {
+      const session = JSON.parse(sessionStr);
+      const user = USERS.find(u => u.username === session.username && u.role === session.role);
+      if (user) {
+        currentUser = { username: user.username, role: user.role, workerId: user.workerId };
+        return true;
+      }
+    } catch(e) {}
+  }
+  return false;
+}
+
+function saveSession(user) {
+  localStorage.setItem(STORAGE_SESSION, JSON.stringify({ username: user.username, role: user.role, workerId: user.workerId }));
+}
+
+function clearSession() {
+  localStorage.removeItem(STORAGE_SESSION);
+  currentUser = null;
+}
+
+// ---------- LOGIN ----------
+function login(username, password) {
+  const user = USERS.find(u => u.username === username && u.password === password);
+  if (user) {
+    currentUser = { username: user.username, role: user.role, workerId: user.workerId };
+    saveSession(currentUser);
+    return true;
+  }
+  return false;
+}
+
+function logout() {
+  clearSession();
+  location.reload();
 }
 
 // ---------- UTILS ----------
@@ -86,6 +131,7 @@ function renderWorkersList() {
 
   document.querySelectorAll(".edit-worker").forEach((btn) => {
     btn.addEventListener("click", () => {
+      if (!isAdmin()) return alert("No tienes permisos.");
       const id = parseInt(btn.dataset.id);
       const worker = workers.find((w) => w.id === id);
       if (worker) {
@@ -101,6 +147,7 @@ function renderWorkersList() {
 
   document.querySelectorAll(".delete-worker").forEach((btn) => {
     btn.addEventListener("click", () => {
+      if (!isAdmin()) return alert("No tienes permisos.");
       const id = parseInt(btn.dataset.id);
       const worker = workers.find((w) => w.id === id);
       if (!worker) return;
@@ -166,6 +213,7 @@ function renderWorkersList() {
 }
 
 function addWorker() {
+  if (!isAdmin()) return alert("No tienes permisos.");
   const input = document.getElementById("workerName");
   const name = input.value.trim();
   if (!name) return alert("Escribe un nombre");
@@ -179,6 +227,7 @@ function addWorker() {
 
 // ---------- EXPORTAR/IMPORTAR TRABAJADORES ----------
 function exportWorkers() {
+  if (!isAdmin()) return alert("No tienes permisos.");
   if (workers.length === 0) {
     alert("No hay trabajadores.");
     return;
@@ -193,6 +242,7 @@ function exportWorkers() {
 }
 
 function importWorkersFromJSON(file) {
+  if (!isAdmin()) return alert("No tienes permisos.");
   const reader = new FileReader();
   reader.onload = (e) => {
     try {
@@ -225,6 +275,7 @@ function importWorkersFromJSON(file) {
 }
 
 function handleImportWorkers(event) {
+  if (!isAdmin()) return alert("No tienes permisos.");
   const file = event.target.files[0];
   if (!file) return;
   if (confirm("Se reemplazarán trabajadores y se borrarán guardias. ¿Continuar?")) importWorkersFromJSON(file);
@@ -251,6 +302,7 @@ function renderGuardDaysList() {
   }
   document.querySelectorAll(".remove-day").forEach((btn) => {
     btn.addEventListener("click", () => {
+      if (!isAdmin()) return alert("No tienes permisos.");
       const date = btn.dataset.date;
       if (confirm(`¿Eliminar ${date}?`)) {
         guardDays = guardDays.filter((d) => d !== date);
@@ -265,7 +317,10 @@ function renderGuardDaysList() {
     });
   });
   document.querySelectorAll(".edit-day").forEach((btn) => {
-    btn.addEventListener("click", () => openEditDayModal(btn.dataset.date));
+    btn.addEventListener("click", () => {
+      if (!isAdmin()) return alert("No tienes permisos.");
+      openEditDayModal(btn.dataset.date);
+    });
   });
 }
 
@@ -278,6 +333,7 @@ function openEditDayModal(oldDate) {
 }
 
 function saveDayEdit() {
+  if (!isAdmin()) return alert("No tienes permisos.");
   if (!currentEditingDay) return;
   const newDate = document.getElementById("editDayInput").value;
   if (!newDate) return alert("Selecciona fecha");
@@ -301,6 +357,7 @@ function closeDayModal() {
 }
 
 function addGuardDay() {
+  if (!isAdmin()) return alert("No tienes permisos.");
   const newDate = document.getElementById("newGuardDay").value;
   if (!newDate) return alert("Selecciona fecha");
   if (guardDays.includes(newDate)) return alert("Ya existe");
@@ -313,6 +370,7 @@ function addGuardDay() {
 }
 
 function generateGuardsFromDays() {
+  if (!isAdmin()) return alert("No tienes permisos.");
   if (!workers.length) return alert("No hay trabajadores.");
   if (!guardDays.length) return alert("No hay días definidos.");
   const sortedDays = [...guardDays].sort();
@@ -344,6 +402,7 @@ function generateGuardsFromDays() {
 }
 
 function exportDaysToJSON() {
+  if (!isAdmin()) return alert("No tienes permisos.");
   if (!guardDays.length) return alert("No hay días para exportar.");
   const data = { guardDays, exportDate: new Date().toISOString() };
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
@@ -355,6 +414,7 @@ function exportDaysToJSON() {
 }
 
 function importDaysFromJSON(file) {
+  if (!isAdmin()) return alert("No tienes permisos.");
   const reader = new FileReader();
   reader.onload = (e) => {
     try {
@@ -400,6 +460,7 @@ function generateGuardsForYear(year) {
 }
 
 function regenerateGuards() {
+  if (!isAdmin()) return alert("No tienes permisos.");
   if (!workers.length) return alert("No hay trabajadores.");
   const year = parseInt(document.getElementById("yearSelect").value);
   currentYear = year;
@@ -416,6 +477,7 @@ function regenerateGuards() {
 
 // ---------- GUARDIAS MANUALES CON BÚSQUEDA ----------
 function openManualModal() {
+  if (!isAdmin()) return alert("No tienes permisos.");
   if (!workers.length) return alert("Primero añade trabajadores.");
   const searchInput = document.getElementById("searchWorkerInput");
   if (searchInput) searchInput.value = "";
@@ -449,6 +511,7 @@ function renderWorkerSelectForManual(filterText = "") {
 }
 
 function saveManualGuard() {
+  if (!isAdmin()) return alert("No tienes permisos.");
   const fechaStr = document.getElementById("manualDate").value;
   const workerSelect = document.getElementById("manualWorker");
   const workerId = workerSelect.value ? parseInt(workerSelect.value) : null;
@@ -507,13 +570,24 @@ function sortGuards(guardsArray) {
   return sorted;
 }
 
+// ---------- FILTRADO POR ROL ----------
+function getVisibleGuards() {
+  if (isAdmin()) {
+    return [...guards];
+  } else {
+    return guards.filter(g => g.workerId === currentUser.workerId);
+  }
+}
+
 function applyFiltersAndRenderTable() {
   const filterDay = document.getElementById("filterDay")?.value || "all";
   const filterMonth = document.getElementById("filterMonth")?.value || "all";
   const filterYear = document.getElementById("filterYear")?.value || "all";
   const filterWorker = document.getElementById("filterWorker")?.value || "all";
   const filterCatedra = document.getElementById("filterCatedra")?.value || "all";
-  let filtered = [...guards];
+
+  let filtered = getVisibleGuards();
+
   if (filterDay !== "all") filtered = filtered.filter((g) => parseInt(g.date.split("-")[2]) === parseInt(filterDay));
   if (filterMonth !== "all") filtered = filtered.filter((g) => parseInt(g.date.split("-")[1]) === parseInt(filterMonth));
   if (filterYear !== "all") filtered = filtered.filter((g) => parseInt(g.date.split("-")[0]) === parseInt(filterYear));
@@ -538,6 +612,7 @@ function renderGuardsTablePage() {
     return;
   }
   tbody.innerHTML = "";
+  const isAdminUser = isAdmin();
   for (const guard of pageGuards) {
     const worker = guard.workerId ? workers.find((w) => w.id === guard.workerId) : null;
     const workerName = worker ? worker.name : guard.workerId ? "❌ Eliminado" : "Sin asignar";
@@ -549,6 +624,7 @@ function renderGuardsTablePage() {
     chk.type = "checkbox";
     chk.checked = guard.completed;
     chk.addEventListener("change", () => {
+      if (!isAdminUser) return alert("No tienes permisos para modificar.");
       guard.completed = chk.checked;
       saveData();
       renderSummary();
@@ -566,18 +642,22 @@ function renderGuardsTablePage() {
       notesCell.textContent = "";
     }
     const actionsCell = row.insertCell(5);
-    const editBtn = document.createElement("button");
-    editBtn.textContent = "✏️ Editar";
-    editBtn.className = "btn-edit";
-    editBtn.addEventListener("click", () => openEditModal(guard));
-    actionsCell.appendChild(editBtn);
-    const delBtn = document.createElement("button");
-    delBtn.textContent = "🗑️ Eliminar";
-    delBtn.className = "btn-edit";
-    delBtn.style.backgroundColor = "#f8d7da";
-    delBtn.style.color = "#721c24";
-    delBtn.addEventListener("click", () => deleteGuard(guard.id));
-    actionsCell.appendChild(delBtn);
+    if (isAdminUser) {
+      const editBtn = document.createElement("button");
+      editBtn.textContent = "✏️ Editar";
+      editBtn.className = "btn-edit";
+      editBtn.addEventListener("click", () => openEditModal(guard));
+      actionsCell.appendChild(editBtn);
+      const delBtn = document.createElement("button");
+      delBtn.textContent = "🗑️ Eliminar";
+      delBtn.className = "btn-edit";
+      delBtn.style.backgroundColor = "#f8d7da";
+      delBtn.style.color = "#721c24";
+      delBtn.addEventListener("click", () => deleteGuard(guard.id));
+      actionsCell.appendChild(delBtn);
+    } else {
+      actionsCell.textContent = "—";
+    }
   }
   renderPaginationControls(totalPages);
   updateSortIndicators();
@@ -637,6 +717,7 @@ function bindSortingEvents() {
 
 // ---------- ELIMINAR GUARDIA ----------
 function deleteGuard(guardId) {
+  if (!isAdmin()) return alert("No tienes permisos.");
   if (confirm("¿Eliminar esta guardia?")) {
     guards = guards.filter((g) => g.id !== guardId);
     saveData();
@@ -648,6 +729,7 @@ function deleteGuard(guardId) {
 
 // ---------- EDITAR GUARDIA ----------
 function openEditModal(guard) {
+  if (!isAdmin()) return alert("No tienes permisos.");
   currentEditingGuard = guard;
   const modal = document.getElementById("editModal");
   const dateInput = document.getElementById("editDate");
@@ -673,6 +755,7 @@ function openEditModal(guard) {
 }
 
 function saveEditGuard() {
+  if (!isAdmin()) return alert("No tienes permisos.");
   if (!currentEditingGuard) return;
   const newDate = document.getElementById("editDate").value;
   const workerSelect = document.getElementById("editWorker");
@@ -711,9 +794,10 @@ function renderCalendar() {
   const weekdays = ["Dom","Lun","Mar","Mié","Jue","Vie","Sáb"];
   weekdays.forEach((d) => grid += `<div class="calendar-day-header">${d}</div>`);
   for (let i = 0; i < startWeekDay; i++) grid += `<div class="calendar-day-cell calendar-empty"></div>`;
+  const visibleGuards = getVisibleGuards();
   for (let d = 1; d <= daysInMonth; d++) {
     const dateStr = `${currentCalendarYear}-${String(currentCalendarMonth + 1).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
-    const guardsOfDay = guards.filter((g) => g.date === dateStr);
+    const guardsOfDay = visibleGuards.filter((g) => g.date === dateStr);
     let cellClass = "calendar-day-cell";
     if (!guardsOfDay.length) cellClass += " calendar-empty";
     grid += `<div class="${cellClass}" data-date="${dateStr}">
@@ -733,8 +817,12 @@ function renderCalendar() {
   container.innerHTML = grid;
   document.querySelectorAll(".calendar-day-cell[data-date]").forEach((cell) => {
     cell.addEventListener("click", () => {
+      if (!isAdmin()) {
+        alert("Solo los administradores pueden editar guardias.");
+        return;
+      }
       const date = cell.dataset.date;
-      const guardsOfDay = guards.filter((g) => g.date === date);
+      const guardsOfDay = getVisibleGuards().filter((g) => g.date === date);
       if (guardsOfDay.length) {
         openEditModal(guardsOfDay[0]);
       } else {
@@ -775,7 +863,7 @@ function updateReportYearFilter() {
 }
 
 function getFilteredGuardsForReport() {
-  let filtered = [...guards];
+  let filtered = getVisibleGuards();
   const year = document.getElementById('reportYear')?.value || 'all';
   const month = document.getElementById('reportMonth')?.value || 'all';
   if (year !== 'all') {
@@ -810,7 +898,6 @@ function renderSummary() {
   const completedTotal = filteredGuards.filter(g => g.completed).length;
   const sinAsignar = filteredGuards.filter(g => g.workerId == null).length;
 
-  // Seguimiento por trabajador
   let filteredWorkers = [...workers];
   if (filterValue === 'noGuards') {
     filteredWorkers = workers.filter(w => !filteredGuards.some(g => g.workerId === w.id));
@@ -848,7 +935,6 @@ function renderSummary() {
   }
   container.innerHTML = html;
 
-  // Estadísticas por cátedra
   const catedraMap = new Map();
   filteredGuards.forEach(g => {
     const catedra = g.catedra || 'Sin cátedra';
@@ -879,6 +965,7 @@ function renderSummary() {
 
 // ---------- EXPORTAR/IMPORTAR COMPLETO ----------
 function exportToJSON() {
+  if (!isAdmin()) return alert("No tienes permisos.");
   let fileName = prompt("Nombre del archivo:", `guardias_sindicato_${currentYear}`);
   if (!fileName) return;
   if (!fileName.endsWith(".json")) fileName += ".json";
@@ -892,6 +979,7 @@ function exportToJSON() {
 }
 
 function importFromJSON(file) {
+  if (!isAdmin()) return alert("No tienes permisos.");
   const reader = new FileReader();
   reader.onload = (e) => {
     try {
@@ -914,6 +1002,7 @@ function importFromJSON(file) {
 }
 
 function exportToCSV() {
+  if (!isAdmin()) return alert("No tienes permisos.");
   if (!guards.length) return alert("No hay guardias.");
   const rows = [["Fecha","Trabajador","Realizada","Cátedra","Notas"]];
   [...guards].sort((a,b) => a.date.localeCompare(b.date)).forEach((g) => {
@@ -1003,7 +1092,6 @@ function setActiveView(view) {
 // ---------- PERÍODO PARA PDF ----------
 function getPeriodInfo(view) {
   if (view === 'Gestion') {
-    // Determinar si estamos en tabla o calendario
     const tableViewSection = document.getElementById('tableViewSection');
     const isTable = tableViewSection.style.display !== 'none';
     if (isTable) {
@@ -1014,7 +1102,6 @@ function getPeriodInfo(view) {
       const yearText = year === 'all' ? 'todos los años' : year;
       return `Período: ${monthName} ${yearText}`;
     } else {
-      // calendario
       const monthNames = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
       return `Período: ${monthNames[currentCalendarMonth]} ${currentCalendarYear}`;
     }
@@ -1033,10 +1120,9 @@ function getPeriodInfo(view) {
 function exportToPdf() {
   const activeView = document.querySelector('.view-section.active-view');
   if (!activeView) return;
-  const viewId = activeView.id; // 'viewGestion', 'viewReportes', 'viewConfig'
+  const viewId = activeView.id;
   const viewName = viewId.replace('view', '');
   const periodInfo = getPeriodInfo(viewName);
-  // Actualizar el div correspondiente
   if (viewName === 'Gestion') {
     const el = document.getElementById('gestionPeriodInfo');
     if (el) el.textContent = periodInfo;
@@ -1044,7 +1130,6 @@ function exportToPdf() {
     const el = document.getElementById('reportesPeriodInfo');
     if (el) el.textContent = periodInfo;
   }
-  // Esperar un momento para que se actualice el DOM y luego imprimir
   setTimeout(() => {
     window.print();
   }, 100);
@@ -1052,6 +1137,7 @@ function exportToPdf() {
 
 // ---------- LIMPIEZA Y EJEMPLO ----------
 function clearAllData() {
+  if (!isAdmin()) return alert("No tienes permisos.");
   if (confirm("⚠️ Eliminará TODOS los datos. ¿Continuar?")) {
     workers = [];
     guards = [];
@@ -1117,6 +1203,33 @@ function updateFilterCatedraSelect() {
   }
 }
 
+// ----- ROLES -----
+function isAdmin() {
+  return currentUser && currentUser.role === 'admin';
+}
+
+function applyRoleBasedUI() {
+  const isAdminUser = isAdmin();
+  const navConfig = document.getElementById('navConfig');
+  if (navConfig) {
+    navConfig.style.display = isAdminUser ? '' : 'none';
+  }
+  const addManualContainer = document.getElementById('addManualContainer');
+  if (addManualContainer) {
+    addManualContainer.style.display = isAdminUser ? '' : 'none';
+  }
+  const userInfo = document.getElementById('userInfo');
+  if (userInfo) {
+    userInfo.textContent = `👤 ${currentUser.username} (${currentUser.role})`;
+  }
+  const filterWorker = document.getElementById('filterWorker');
+  if (filterWorker && !isAdminUser) {
+    filterWorker.style.display = 'none';
+  } else if (filterWorker) {
+    filterWorker.style.display = '';
+  }
+}
+
 function refreshUI() {
   renderWorkersList();
   renderGuardDaysList();
@@ -1130,6 +1243,7 @@ function refreshUI() {
   updateFilterCatedraSelect();
   updateReportYearFilter();
   document.getElementById("yearSelect").value = currentYear;
+  applyRoleBasedUI();
 }
 
 // ---------- EVENTOS ----------
@@ -1152,6 +1266,7 @@ function bindEvents() {
     e.target.value = "";
   });
   document.getElementById("resetAllChecksBtn")?.addEventListener("click", () => {
+    if (!isAdmin()) return alert("No tienes permisos.");
     if (guards.length && confirm("Desmarcar todas?")) {
       guards.forEach((g) => (g.completed = false));
       saveData();
@@ -1197,26 +1312,97 @@ function bindEvents() {
   document.getElementById("importWorkersInput")?.addEventListener("change", handleImportWorkers);
   bindManualSearchEvent();
 
-  // Navegación
   document.getElementById("navGestion")?.addEventListener("click", () => setActiveView("Gestion"));
   document.getElementById("navReportes")?.addEventListener("click", () => setActiveView("Reportes"));
   document.getElementById("navConfig")?.addEventListener("click", () => setActiveView("Config"));
 
-  // Exportar PDF
   document.getElementById("exportPdfGestionBtn")?.addEventListener("click", exportToPdf);
   document.getElementById("exportPdfReportesBtn")?.addEventListener("click", exportToPdf);
 
-  // Filtros de reportes
   document.getElementById("applyReportFiltersBtn")?.addEventListener("click", renderSummary);
   document.getElementById("reportYear")?.addEventListener("change", renderSummary);
   document.getElementById("reportMonth")?.addEventListener("change", renderSummary);
+
+  document.getElementById("loginBtn")?.addEventListener("click", handleLogin);
+  document.getElementById("loginPassword")?.addEventListener("keypress", (e) => {
+    if (e.key === "Enter") handleLogin();
+  });
+  document.getElementById("loginUsername")?.addEventListener("keypress", (e) => {
+    if (e.key === "Enter") handleLogin();
+  });
+  document.getElementById("logoutBtn")?.addEventListener("click", logout);
+}
+
+function handleLogin() {
+  console.log("handleLogin() llamado");
+  const username = document.getElementById("loginUsername").value.trim();
+  const password = document.getElementById("loginPassword").value.trim();
+  const errorEl = document.getElementById("loginError");
+  
+  console.log("Usuarios cargados:", USERS.length);
+  
+  if (!username || !password) {
+    errorEl.textContent = "⚠️ Ingresa usuario y contraseña.";
+    errorEl.style.display = "block";
+    return;
+  }
+  
+  if (login(username, password)) {
+    console.log("✅ Login exitoso para:", username);
+    errorEl.style.display = "none";
+    document.getElementById("loginModal").style.display = "none";
+    document.getElementById("appContent").style.display = "block";
+    loadData();
+    refreshUI();
+    setActiveView("Gestion");
+    setView("table");
+  } else {
+    console.warn("❌ Login fallido para:", username);
+    errorEl.textContent = "❌ Usuario o contraseña incorrectos.";
+    errorEl.style.display = "block";
+  }
+}
+
+// ---------- CARGA DE USUARIOS DESDE JSON EXTERNO ----------
+async function loadUsers() {
+  try {
+    const response = await fetch('users.json');
+    if (!response.ok) throw new Error('HTTP ' + response.status);
+    USERS = await response.json();
+    console.log('✅ Usuarios cargados:', USERS.length);
+  } catch (error) {
+    console.error('❌ Error cargando users.json:', error);
+    // Fallback: usar usuarios por defecto si falla la carga
+    USERS = [
+      { id: 1, username: 'admin', password: 'admin123', role: 'admin', workerId: null },
+      { id: 2, username: 'miguel', password: '1234', role: 'worker', workerId: 1781469978315 },
+    ];
+    alert('⚠️ No se pudo cargar users.json. Usando usuarios por defecto.');
+  }
 }
 
 // ---------- INICIO ----------
-function init() {
-  loadData();
+async function init() {
+  await loadUsers(); // Cargar usuarios antes de todo
+
+  const hasSession = loadSession();
+  if (hasSession) {
+    document.getElementById("loginModal").style.display = "none";
+    document.getElementById("appContent").style.display = "block";
+    loadData();
+    refreshUI();
+    setActiveView("Gestion");
+    setView("table");
+  } else {
+    document.getElementById("loginModal").style.display = "flex";
+    document.getElementById("appContent").style.display = "none";
+    loadData(); // Cargar datos aunque no esté logueado (se mostrarán después del login)
+    // No mostramos nada hasta login
+  }
+
+  // 🔥 Siempre vincular eventos (incluidos los del login)
   bindEvents();
-  setActiveView("Gestion");
-  setView("table");
 }
+
+// Ejecutar al cargar
 init();
