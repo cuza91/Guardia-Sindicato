@@ -2,7 +2,7 @@
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes" />
     <title>Gestión de Guardias - Sindicato</title>
     <link rel="stylesheet" href="styles.css" />
   </head>
@@ -36,17 +36,13 @@
     <div id="appContent" style="display:none;">
       <div class="container">
         <header>
-          <h1>🗓️ Sistema de Gestión de las Guardias del Sindicato</h1>
-          <div style="display:flex; align-items:center; gap:1rem;">
-            <span id="userInfo" style="font-weight:500; color:var(--gray-700);">👤 Admin</span>
-            <button id="logoutBtn" class="btn outline small">🚪 Cerrar sesión</button>
+          <h1>🗓️ Gestión de Guardias</h1>
+          <div class="header-right">
+            <span id="userInfo" class="user-info">👤 Admin</span>
+            <button id="logoutBtn" class="btn logout-btn" title="Cerrar sesión">✖</button>
             <div class="view-toggle" id="viewToggleHeader">
-              <button id="tableViewBtn" class="btn small active">
-                📋 Ver las Guardias en Forma de Tabla
-              </button>
-              <button id="calendarViewBtn" class="btn small">
-                📅 Ver las Guardias en Forma de Calendario
-              </button>
+              <button id="tableViewBtn" class="btn small active">📋 Tabla</button>
+              <button id="calendarViewBtn" class="btn small">📅 Calendario</button>
             </div>
           </div>
         </header>
@@ -64,48 +60,53 @@
             <h2>
               📋 Gestión de Guardias
               <button id="exportPdfGestionBtn" class="btn outline small" style="margin-left: auto;">
-                🖨️ Exportar a PDF
+                🖨️ PDF
               </button>
             </h2>
             <div id="gestionPeriodInfo" class="print-only" style="display:none; text-align:center; font-weight:bold; margin-bottom:1rem;"></div>
 
             <!-- Filtros (solo tabla) -->
             <div id="filtersSection" class="filters-bar">
-              <div class="form-row">
-                <select id="filterDay" style="flex: 1">
-                  <option value="all">Día</option>
-                  <option value="1">1</option><option value="2">2</option><option value="3">3</option>
-                  <option value="4">4</option><option value="5">5</option><option value="6">6</option>
-                  <option value="7">7</option><option value="8">8</option><option value="9">9</option>
-                  <option value="10">10</option><option value="11">11</option><option value="12">12</option>
-                  <option value="13">13</option><option value="14">14</option><option value="15">15</option>
-                  <option value="16">16</option><option value="17">17</option><option value="18">18</option>
-                  <option value="19">19</option><option value="20">20</option><option value="21">21</option>
-                  <option value="22">22</option><option value="23">23</option><option value="24">24</option>
-                  <option value="25">25</option><option value="26">26</option><option value="27">27</option>
-                  <option value="28">28</option><option value="29">29</option><option value="30">30</option>
-                  <option value="31">31</option>
-                </select>
-                <select id="filterMonth" style="flex: 1">
-                  <option value="all">Mes</option>
-                  <option value="1">Enero</option><option value="2">Febrero</option>
-                  <option value="3">Marzo</option><option value="4">Abril</option>
-                  <option value="5">Mayo</option><option value="6">Junio</option>
-                  <option value="7">Julio</option><option value="8">Agosto</option>
-                  <option value="9">Septiembre</option><option value="10">Octubre</option>
-                  <option value="11">Noviembre</option><option value="12">Diciembre</option>
-                </select>
-                <select id="filterYear" style="flex: 1">
-                  <option value="all">Año</option>
-                </select>
-                <select id="filterWorker" style="flex: 2">
-                  <option value="all">Trabajador</option>
-                  <option value="none">Sin asignar</option>
-                </select>
-                <select id="filterCatedra" style="flex: 2">
-                  <option value="all">Cátedra</option>
-                </select>
-                <button id="clearFiltersBtn" class="btn outline">🗑️ Limpiar</button>
+              <div class="filter-toggle">
+                <button id="toggleFiltersBtn" class="btn outline small">🔽 Filtros</button>
+              </div>
+              <div id="filtersContent" class="filters-content">
+                <div class="form-row">
+                  <select id="filterDay" style="flex: 1">
+                    <option value="all">Día</option>
+                    <option value="1">1</option><option value="2">2</option><option value="3">3</option>
+                    <option value="4">4</option><option value="5">5</option><option value="6">6</option>
+                    <option value="7">7</option><option value="8">8</option><option value="9">9</option>
+                    <option value="10">10</option><option value="11">11</option><option value="12">12</option>
+                    <option value="13">13</option><option value="14">14</option><option value="15">15</option>
+                    <option value="16">16</option><option value="17">17</option><option value="18">18</option>
+                    <option value="19">19</option><option value="20">20</option><option value="21">21</option>
+                    <option value="22">22</option><option value="23">23</option><option value="24">24</option>
+                    <option value="25">25</option><option value="26">26</option><option value="27">27</option>
+                    <option value="28">28</option><option value="29">29</option><option value="30">30</option>
+                    <option value="31">31</option>
+                  </select>
+                  <select id="filterMonth" style="flex: 1">
+                    <option value="all">Mes</option>
+                    <option value="1">Enero</option><option value="2">Febrero</option>
+                    <option value="3">Marzo</option><option value="4">Abril</option>
+                    <option value="5">Mayo</option><option value="6">Junio</option>
+                    <option value="7">Julio</option><option value="8">Agosto</option>
+                    <option value="9">Septiembre</option><option value="10">Octubre</option>
+                    <option value="11">Noviembre</option><option value="12">Diciembre</option>
+                  </select>
+                  <select id="filterYear" style="flex: 1">
+                    <option value="all">Año</option>
+                  </select>
+                  <select id="filterWorker" style="flex: 2">
+                    <option value="all">Trabajador</option>
+                    <option value="none">Sin asignar</option>
+                  </select>
+                  <select id="filterCatedra" style="flex: 2">
+                    <option value="all">Cátedra</option>
+                  </select>
+                  <button id="clearFiltersBtn" class="btn outline">🗑️ Limpiar</button>
+                </div>
               </div>
             </div>
 
@@ -115,12 +116,12 @@
                 <table id="guardsTable">
                   <thead>
                     <tr>
-                      <th>Fecha</th>
-                      <th>Trabajador</th>
-                      <th>Realizada</th>
-                      <th>Cátedra</th>
-                      <th>Notas</th>
-                      <th>Acciones</th>
+                      <th data-col="date">Fecha</th>
+                      <th data-col="worker">Trabajador</th>
+                      <th data-col="completed">Realizada</th>
+                      <th data-col="catedra">Cátedra</th>
+                      <th data-col="notes">Notas</th>
+                      <th data-col="actions">Acciones</th>
                     </tr>
                   </thead>
                   <tbody id="guardsTableBody">
@@ -134,17 +135,17 @@
             <!-- Vista Calendario -->
             <div id="calendarViewSection" style="display: none">
               <div class="calendar-nav">
-                <button id="prevMonthBtn" class="btn outline">◀ Mes anterior</button>
-                <span id="currentMonthYear" style="font-weight: bold; margin: 0 1rem"></span>
-                <button id="nextMonthBtn" class="btn outline">Mes siguiente ▶</button>
+                <button id="prevMonthBtn" class="btn outline">◀</button>
+                <span id="currentMonthYear" style="font-weight: bold; margin: 0 0.5rem"></span>
+                <button id="nextMonthBtn" class="btn outline">▶</button>
               </div>
               <div id="calendarGrid" class="calendar-grid"></div>
-              <p class="calendar-note">💡 Haz clic en cualquier día para editar la guardia.</p>
+              <p class="calendar-note">💡 Haz clic en un día para editar la guardia.</p>
             </div>
 
             <!-- Botón añadir manual (solo admin) -->
             <div class="form-row" style="margin-top:1rem;" id="addManualContainer">
-              <button id="addManualGuardBtn" class="btn primary">➕ Generar Guardia de Forma Manual</button>
+              <button id="addManualGuardBtn" class="btn primary">➕ Generar Manual</button>
             </div>
           </section>
         </div>
@@ -153,14 +154,13 @@
         <div id="viewReportes" class="view-section" style="display: none;">
           <section class="card">
             <h2>
-              📊 Reportes y Estadísticas
+              📊 Reportes
               <button id="exportPdfReportesBtn" class="btn outline small" style="margin-left: auto;">
-                🖨️ Exportar a PDF
+                🖨️ PDF
               </button>
             </h2>
             <div id="reportesPeriodInfo" class="print-only" style="display:none; text-align:center; font-weight:bold; margin-bottom:1rem;"></div>
 
-            <!-- Filtros para reportes -->
             <div class="filters-bar" style="margin-bottom:1.5rem;">
               <div class="form-row">
                 <label for="reportYear">Año:</label>
@@ -175,18 +175,18 @@
                   <option value="9">Septiembre</option><option value="10">Octubre</option>
                   <option value="11">Noviembre</option><option value="12">Diciembre</option>
                 </select>
-                <button id="applyReportFiltersBtn" class="btn primary">Aplicar filtros</button>
+                <button id="applyReportFiltersBtn" class="btn primary">Aplicar</button>
               </div>
             </div>
 
             <div class="summary-section">
               <h3>Seguimiento por trabajador</h3>
               <div class="form-row">
-                <label for="summaryFilter">Filtrar trabajadores:</label>
+                <label for="summaryFilter">Filtrar:</label>
                 <select id="summaryFilter" style="flex: 2">
                   <option value="all">Todos los trabajadores</option>
-                  <option value="noGuards">Sin guardias asignadas</option>
-                  <option value="noCompleted">Sin guardias realizadas</option>
+                  <option value="noGuards">Sin guardias</option>
+                  <option value="noCompleted">Sin realizadas</option>
                 </select>
               </div>
               <div id="summaryStats" class="stats-container">
@@ -194,7 +194,6 @@
               </div>
             </div>
 
-            <!-- Estadísticas por cátedra -->
             <div class="summary-section" style="margin-top:2rem; border-top:1px solid var(--gray-300); padding-top:1.5rem;">
               <h3>📚 Estadísticas por Cátedra</h3>
               <div id="catedraStats" class="stats-container">
@@ -212,41 +211,38 @@
             <div class="config-grid">
               <!-- Trabajadores -->
               <div class="config-block">
-                <h3>👥 Listado de Trabajadores</h3>
+                <h3>👥 Trabajadores</h3>
                 <div class="form-row">
-                  <input type="text" id="workerName" placeholder="Nombre completo" autocomplete="off" />
-                  <button id="addWorkerBtn" class="btn primary">➕ Añadir Trabajador</button>
-                  <button id="clearAllDataBtn" class="btn outline" style="border-color:#dc3545;color:#dc3545;min-width:180px;padding:0.5rem 4.3rem;">
-                    ⚠️ Limpiar todos los Datos del Sistema
+                  <input type="text" id="workerName" placeholder="Nombre" autocomplete="off" />
+                  <button id="addWorkerBtn" class="btn primary">➕ Añadir</button>
+                  <button id="clearAllDataBtn" class="btn outline" style="border-color:#dc3545;color:#dc3545;min-width:180px;padding:0.5rem 1rem;">
+                    ⚠️ Limpiar todo
                   </button>
                 </div>
-                <div id="workersList" class="items-list"></div>
+                <div id="workersList" class="items-list workers-list"></div>
                 <div class="form-row">
-                  <button id="exportWorkersBtn" class="btn outline small"><strong>📤 Exportar Trabajadores</strong></button>
-                  <label for="importWorkersInput" class="btn outline small" style="cursor:pointer">📥 Importar Trabajadores</label>
+                  <button id="exportWorkersBtn" class="btn outline small">📤 Exportar</button>
+                  <label for="importWorkersInput" class="btn outline small" style="cursor:pointer">📥 Importar</label>
                   <input type="file" id="importWorkersInput" accept=".json" style="display:none" />
                 </div>
-                <small>⚡ Si cambias la lista de trabajadores, deberás regenerar las guardias.</small>
+                <small>⚡ Si cambias la lista, deberás regenerar las guardias.</small>
               </div>
 
               <!-- Días de Guardia Definidos -->
               <div class="config-block">
-                <h3>📆 Listado de Días de Guardia</h3>
+                <h3>📆 Días de Guardia</h3>
                 <div class="form-row">
                   <input type="date" id="newGuardDay" value="2026-01-01" />
-                  <button id="addGuardDayBtn" class="btn primary">➕ Añadir día</button>
-                  <button id="generateFromDaysBtn" class="btn success">🎯 Generar Guardias (Días Seleccionados)</button>
+                  <button id="addGuardDayBtn" class="btn primary">➕ Añadir</button>
+                  <button id="generateFromDaysBtn" class="btn success">🎯 Generar</button>
                 </div>
-                <div id="guardDaysList" class="items-list days-grid">
-                  <p>No hay días definidos. Añade fechas específicas.</p>
-                </div>
+                <div id="guardDaysList" class="items-list days-grid"></div>
                 <div class="form-row">
-                  <button id="exportDaysBtn" class="btn outline small"><strong>📤 Exportar Días de Guardia</strong></button>
-                  <label for="importDaysInput" class="btn outline small" style="cursor:pointer">📥 Importar Días de Guardia</label>
+                  <button id="exportDaysBtn" class="btn outline small">📤 Exportar</button>
+                  <label for="importDaysInput" class="btn outline small" style="cursor:pointer">📥 Importar</label>
                   <input type="file" id="importDaysInput" accept=".json" style="display:none" />
                 </div>
-                <small>📌 Los días aquí definidos se usarán para asignar una guardia en orden.<br />
-                  Para múltiples guardias en un mismo día, añádelas manualmente.</small>
+                <small>📌 Los días aquí definidos se usarán para asignar guardias en orden.<br />Para múltiples en un mismo día, añádelas manualmente.</small>
               </div>
             </div>
           </section>
@@ -257,14 +253,14 @@
             <div class="actions-grid">
               <div class="action-group">
                 <label for="yearSelect">Año:</label>
-                <input type="number" id="yearSelect" value="2026" min="2024" max="2030" style="width:100px" />
-                <button id="generateBtn" class="btn success">🔄 Generar Guardias Automáticamente (Todo el Año)</button>
+                <input type="number" id="yearSelect" value="2026" min="2024" max="2030" style="width:80px" />
+                <button id="generateBtn" class="btn success">🔄 Generar Todo el Año</button>
               </div>
               <div class="action-group">
                 <button id="exportDataBtn" class="btn outline">💾 Exportar Datos</button>
-                <label for="importFileInput" class="btn outline" style="cursor:pointer">📂 Importar Datos</label>
+                <label for="importFileInput" class="btn outline" style="cursor:pointer">📂 Importar</label>
                 <input type="file" id="importFileInput" accept=".json" style="display:none" />
-                <button id="resetAllChecksBtn" class="btn outline small" style="border-color:#dc3545;color:#dc3545">❌ Desmarcar Todas las Guardias</button>
+                <button id="resetAllChecksBtn" class="btn outline small" style="border-color:#dc3545;color:#dc3545">❌ Desmarcar Todas</button>
               </div>
             </div>
             <div class="info-bar">
@@ -300,7 +296,7 @@
         </div>
         <div class="form-group">
           <label>📝 Notas:</label>
-          <input type="text" id="editNotes" placeholder="Ej: Mañana, tarde, sustitución..." />
+          <input type="text" id="editNotes" placeholder="Ej: Mañana, tarde..." />
         </div>
         <div class="form-actions">
           <button id="saveEditBtn" class="btn success">💾 Guardar</button>
@@ -312,7 +308,7 @@
     <div id="manualModal" class="modal" style="display: none">
       <div class="modal-content">
         <span class="close-manual">&times;</span>
-        <h3>➕ Añadir Guardia Manualmente</h3>
+        <h3>➕ Añadir Manual</h3>
         <div class="form-group">
           <label>📅 Fecha:</label>
           <input type="date" id="manualDate" required />
@@ -346,7 +342,7 @@
     <div id="editDayModal" class="modal" style="display: none">
       <div class="modal-content">
         <span class="close-day">&times;</span>
-        <h3>📅 Editar día de guardia</h3>
+        <h3>📅 Editar día</h3>
         <div class="form-group">
           <label>📆 Fecha actual:</label>
           <span id="originalDaySpan" style="font-weight: bold"></span>
