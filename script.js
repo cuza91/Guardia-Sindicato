@@ -1876,14 +1876,14 @@ async function loadUsers() {
       {
         id: 1,
         username: "admin",
-        password: "admin123",
+        password: "admin",
         role: "admin",
         workerId: null,
       },
       {
         id: 2,
         username: "miguel",
-        password: "1234",
+        password: "miguel",
         role: "worker",
         workerId: 1781469978315,
       },
