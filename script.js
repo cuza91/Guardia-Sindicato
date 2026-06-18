@@ -1395,9 +1395,6 @@ async function loadUsers() {
     USERS = [
       { id: 1, username: 'admin', password: 'admin123', role: 'admin', workerId: null },
       { id: 2, username: 'miguel', password: '1234', role: 'worker', workerId: 1781469978315 },
-      { id: 3, username: 'kenia', password: '1234', role: 'worker', workerId: 1781469978317 },
-      { id: 4, username: 'rene', password: '1234', role: 'worker', workerId: 1781469978316 },
-      { id: 5, username: 'bertha', password: '1234', role: 'worker', workerId: 1781469978318 }
     ];
     alert('⚠️ No se pudo cargar users.json. Usando usuarios por defecto.');
   }
