@@ -613,13 +613,25 @@ function renderGuardsTablePage() {
   }
   tbody.innerHTML = "";
   const isAdminUser = isAdmin();
+  const columnLabels = ['date','worker','completed','catedra','notes','actions'];
   for (const guard of pageGuards) {
     const worker = guard.workerId ? workers.find((w) => w.id === guard.workerId) : null;
     const workerName = worker ? worker.name : guard.workerId ? "❌ Eliminado" : "Sin asignar";
     const row = tbody.insertRow();
-    row.insertCell(0).textContent = formatDate(guard.date);
-    row.insertCell(1).textContent = workerName;
-    const chkCell = row.insertCell(2);
+    
+    // Fecha
+    const td1 = row.insertCell(0);
+    td1.textContent = formatDate(guard.date);
+    td1.setAttribute('data-label', '📅 Fecha');
+    
+    // Trabajador
+    const td2 = row.insertCell(1);
+    td2.textContent = workerName;
+    td2.setAttribute('data-label', '👤 Trabajador');
+    
+    // Realizada
+    const td3 = row.insertCell(2);
+    td3.setAttribute('data-label', '✅ Realizada');
     const chk = document.createElement("input");
     chk.type = "checkbox";
     chk.checked = guard.completed;
@@ -630,33 +642,41 @@ function renderGuardsTablePage() {
       renderSummary();
       applyFiltersAndRenderTable();
     });
-    chkCell.appendChild(chk);
-    row.insertCell(3).textContent = guard.catedra || "";
-    const notesCell = row.insertCell(4);
+    td3.appendChild(chk);
+    
+    // Cátedra
+    const td4 = row.insertCell(3);
+    td4.textContent = guard.catedra || "";
+    td4.setAttribute('data-label', '🏛️ Cátedra');
+    
+    // Notas
+    const td5 = row.insertCell(4);
+    td5.setAttribute('data-label', '📝 Notas');
     if (guard.notes) {
       const icon = document.createElement("span");
       icon.textContent = "📝";
       icon.title = guard.notes;
-      notesCell.appendChild(icon);
-    } else {
-      notesCell.textContent = "";
+      td5.appendChild(icon);
     }
-    const actionsCell = row.insertCell(5);
+    
+    // Acciones
+    const td6 = row.insertCell(5);
+    td6.setAttribute('data-label', '⚙️ Acciones');
     if (isAdminUser) {
       const editBtn = document.createElement("button");
       editBtn.textContent = "✏️ Editar";
       editBtn.className = "btn-edit";
       editBtn.addEventListener("click", () => openEditModal(guard));
-      actionsCell.appendChild(editBtn);
+      td6.appendChild(editBtn);
       const delBtn = document.createElement("button");
       delBtn.textContent = "🗑️ Eliminar";
       delBtn.className = "btn-edit";
       delBtn.style.backgroundColor = "#f8d7da";
       delBtn.style.color = "#721c24";
       delBtn.addEventListener("click", () => deleteGuard(guard.id));
-      actionsCell.appendChild(delBtn);
+      td6.appendChild(delBtn);
     } else {
-      actionsCell.textContent = "—";
+      td6.textContent = "—";
     }
   }
   renderPaginationControls(totalPages);
@@ -803,12 +823,12 @@ function renderCalendar() {
     grid += `<div class="${cellClass}" data-date="${dateStr}">
               <div class="calendar-day-number">${d}</div>`;
     if (guardsOfDay.length) {
-      grid += `<div style="font-size:0.65rem; display:flex; flex-direction:column; gap:2px; max-height:80px; overflow-y:auto;">`;
+      grid += `<div style="font-size:0.6rem; display:flex; flex-direction:column; gap:1px; max-height:60px; overflow-y:auto;">`;
       guardsOfDay.forEach((g) => {
         const worker = g.workerId ? workers.find((w) => w.id === g.workerId) : null;
         const name = worker ? worker.name : g.workerId ? "❌" : "Sin asignar";
         const completedClass = g.completed ? "completed" : "";
-        grid += `<div class="calendar-day-guard ${completedClass}" style="margin:0; padding:0 0.2rem; background:${g.completed ? "var(--success-light)" : "var(--primary-light)"};">${escapeHtml(name)} ${g.completed ? "✅" : "⏳"}</div>`;
+        grid += `<div class="calendar-day-guard ${completedClass}" style="margin:0; padding:0 0.1rem; background:${g.completed ? "var(--success-light)" : "var(--primary-light)"};">${escapeHtml(name)} ${g.completed ? "✅" : "⏳"}</div>`;
       });
       grid += `</div>`;
     }
@@ -1210,27 +1230,22 @@ function isAdmin() {
 
 function applyRoleBasedUI() {
   const isAdminUser = isAdmin();
-  // Ocultar pestaña de Reportes si no es admin
   const navReportes = document.getElementById('navReportes');
   if (navReportes) {
     navReportes.style.display = isAdminUser ? '' : 'none';
   }
-  // Ocultar Configuración si no es admin
   const navConfig = document.getElementById('navConfig');
   if (navConfig) {
     navConfig.style.display = isAdminUser ? '' : 'none';
   }
-  // Ocultar botón añadir manual si no es admin
   const addManualContainer = document.getElementById('addManualContainer');
   if (addManualContainer) {
     addManualContainer.style.display = isAdminUser ? '' : 'none';
   }
-  // Mostrar solo el nombre de usuario, sin el rol
   const userInfo = document.getElementById('userInfo');
   if (userInfo && currentUser) {
     userInfo.textContent = `👤 ${currentUser.username}`;
   }
-  // Ocultar filtro de trabajador para workers
   const filterWorker = document.getElementById('filterWorker');
   if (filterWorker && !isAdminUser) {
     filterWorker.style.display = 'none';
@@ -1341,13 +1356,24 @@ function bindEvents() {
   });
   document.getElementById("logoutBtn")?.addEventListener("click", logout);
 
-  // Mostrar/ocultar contraseña
   document.getElementById("showPasswordCheckbox")?.addEventListener("change", function() {
     const passwordInput = document.getElementById("loginPassword");
     if (this.checked) {
       passwordInput.type = "text";
     } else {
       passwordInput.type = "password";
+    }
+  });
+
+  // Toggle filtros en móvil
+  document.getElementById("toggleFiltersBtn")?.addEventListener("click", function() {
+    const content = document.getElementById("filtersContent");
+    if (content.style.display === "none") {
+      content.style.display = "block";
+      this.textContent = "🔼 Ocultar filtros";
+    } else {
+      content.style.display = "none";
+      this.textContent = "🔽 Filtros";
     }
   });
 }
@@ -1391,7 +1417,6 @@ async function loadUsers() {
     console.log('✅ Usuarios cargados:', USERS.length);
   } catch (error) {
     console.error('❌ Error cargando users.json:', error);
-    // Fallback: usar usuarios por defecto si falla la carga
     USERS = [
       { id: 1, username: 'admin', password: 'admin123', role: 'admin', workerId: null },
       { id: 2, username: 'miguel', password: '1234', role: 'worker', workerId: 1781469978315 },
@@ -1402,7 +1427,7 @@ async function loadUsers() {
 
 // ---------- INICIO ----------
 async function init() {
-  await loadUsers(); // Cargar usuarios antes de todo
+  await loadUsers();
 
   const hasSession = loadSession();
   if (hasSession) {
@@ -1415,11 +1440,9 @@ async function init() {
   } else {
     document.getElementById("loginModal").style.display = "flex";
     document.getElementById("appContent").style.display = "none";
-    loadData(); // Cargar datos aunque no esté logueado (se mostrarán después del login)
-    // No mostramos nada hasta login
+    loadData();
   }
 
-  // Siempre vincular eventos (incluidos los del login)
   bindEvents();
 }
 
