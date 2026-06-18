@@ -19,6 +19,10 @@
         <div class="form-group">
           <label>🔑 Contraseña:</label>
           <input type="password" id="loginPassword" placeholder="Contraseña" />
+          <div style="display:flex; align-items:center; gap:0.5rem; margin-top:0.25rem;">
+            <input type="checkbox" id="showPasswordCheckbox" />
+            <label for="showPasswordCheckbox" style="font-size:0.85rem; cursor:pointer;"> mostrar contraseña</label>
+          </div>
         </div>
         <div id="loginError" style="color:var(--danger); margin-top:0.5rem; display:none;"></div>
         <div class="form-actions">
@@ -271,7 +275,7 @@
       </div>
     </div>
 
-    <!-- MODALES (sin cambios) -->
+    <!-- MODALES -->
     <div id="editModal" class="modal" style="display: none">
       <div class="modal-content">
         <span class="close">&times;</span>
