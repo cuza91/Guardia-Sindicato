@@ -19,7 +19,13 @@ let currentFilteredGuards = [];
 let currentSortColumn = "date";
 let currentSortOrder = "asc";
 
-// LocalStorage keys
+let currentEditingGuard = null;
+let currentEditingDay = null;
+
+// ---------- USUARIOS (cargados desde JSON externo) ----------
+let USERS = [];
+
+// ---------- CLAVES LOCALSTORAGE ----------
 const STORAGE_WORKERS = "sindicato_workers";
 const STORAGE_GUARDS = "sindicato_guards";
 const STORAGE_YEAR = "sindicato_year";
@@ -27,13 +33,7 @@ const STORAGE_DAYS = "sindicato_guardDays";
 const STORAGE_LAST_INDEX = "sindicato_lastIndexDays";
 const STORAGE_SESSION = "sindicato_session";
 
-let currentEditingGuard = null;
-let currentEditingDay = null;
-
-// ---------- USUARIOS (cargados desde JSON externo) ----------
-let USERS = [];
-
-// ---------- FUNCIONES DE PERSISTENCIA ----------
+// ---------- FUNCIONES DE PERSISTENCIA (localStorage) ----------
 function saveData() {
   localStorage.setItem(STORAGE_WORKERS, JSON.stringify(workers));
   localStorage.setItem(STORAGE_GUARDS, JSON.stringify(guards));
@@ -59,6 +59,72 @@ function loadData() {
   updateFilterYearSelect();
   updateFilterCatedraSelect();
   updateReportYearFilter();
+}
+
+// ---------- CARGA INICIAL DESDE JSON ----------
+async function loadInitialDataFromJson() {
+  try {
+    const response = await fetch('base.json');
+    if (!response.ok) throw new Error('No se pudo cargar base.json');
+    const data = await response.json();
+    // Guardar en localStorage
+    localStorage.setItem(STORAGE_WORKERS, JSON.stringify(data.workers || []));
+    localStorage.setItem(STORAGE_GUARDS, JSON.stringify(data.guards || []));
+    localStorage.setItem(STORAGE_YEAR, (data.currentYear || 2026).toString());
+    localStorage.setItem(STORAGE_DAYS, JSON.stringify(data.guardDays || []));
+    localStorage.setItem(STORAGE_LAST_INDEX, (data.lastWorkerIndexForDays || 0).toString());
+    // Cargar en memoria
+    loadData();
+    return true;
+  } catch (error) {
+    console.warn('No se pudo cargar base.json, usando datos existentes en localStorage o vacíos.', error);
+    return false;
+  }
+}
+
+// ---------- DESCARGAR JSON ACTUAL ----------
+function downloadCurrentDataAsJson() {
+  const data = {
+    workers,
+    guards,
+    guardDays,
+    currentYear,
+    lastWorkerIndexForDays,
+    exportDate: new Date().toISOString()
+  };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'base.json';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+// ---------- CARGAR DESDE ARCHIVO JSON (subida) ----------
+function loadFromFile(file) {
+  const reader = new FileReader();
+  reader.onload = async (e) => {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (!data.workers || !data.guards) throw new Error('Formato inválido');
+      // Guardar en localStorage
+      localStorage.setItem(STORAGE_WORKERS, JSON.stringify(data.workers));
+      localStorage.setItem(STORAGE_GUARDS, JSON.stringify(data.guards));
+      localStorage.setItem(STORAGE_YEAR, (data.currentYear || 2026).toString());
+      localStorage.setItem(STORAGE_DAYS, JSON.stringify(data.guardDays || []));
+      localStorage.setItem(STORAGE_LAST_INDEX, (data.lastWorkerIndexForDays || 0).toString());
+      // Cargar en memoria
+      loadData();
+      refreshUI();
+      alert('Datos cargados desde el archivo.');
+    } catch (err) {
+      alert('Error al leer el archivo: ' + err.message);
+    }
+  };
+  reader.readAsText(file);
 }
 
 // ---------- SESIÓN ----------
@@ -1037,7 +1103,6 @@ function importFromJSON(file) {
       guardDays = data.guardDays || [];
       lastWorkerIndexForDays = data.lastWorkerIndexForDays || 0;
       saveData();
-      document.getElementById("yearSelect").value = currentYear;
       refreshUI();
       alert("Datos importados.");
     } catch (err) {
@@ -1427,6 +1492,7 @@ function handleLogin() {
     errorEl.style.display = "none";
     document.getElementById("loginModal").style.display = "none";
     document.getElementById("appContent").style.display = "block";
+    // Cargar datos desde localStorage (ya están cargados en init)
     loadData();
     refreshUI();
     setActiveView("Gestion");
@@ -1459,21 +1525,33 @@ async function loadUsers() {
 async function init() {
   await loadUsers();
 
+  // Intentar cargar desde localStorage primero
+  const hasLocalData = localStorage.getItem(STORAGE_WORKERS) !== null;
+  if (!hasLocalData) {
+    // Si no hay datos en localStorage, intentar cargar desde base.json
+    await loadInitialDataFromJson();
+  } else {
+    // Cargar datos desde localStorage a la memoria
+    loadData();
+  }
+
   const hasSession = loadSession();
   if (hasSession) {
     document.getElementById("loginModal").style.display = "none";
     document.getElementById("appContent").style.display = "block";
-    loadData();
     refreshUI();
     setActiveView("Gestion");
     setView("table");
   } else {
     document.getElementById("loginModal").style.display = "flex";
     document.getElementById("appContent").style.display = "none";
-    loadData();
   }
 
   bindEvents();
+
+  // Agregar botón para descargar JSON (opcional, se puede poner en la interfaz)
+  // Puedes añadirlo en el HTML, pero por ahora lo dejamos como una función accesible desde consola
+  console.log('Para descargar el JSON actual, usa downloadCurrentDataAsJson()');
 }
 
 // Ejecutar al cargar
