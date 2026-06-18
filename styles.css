@@ -699,6 +699,7 @@ small {
 
 /* ===== ESTILOS DE IMPRESIÓN ===== */
 @media print {
+  /* Ocultar elementos comunes */
   .main-nav,
   .view-toggle,
   .btn,
@@ -711,37 +712,55 @@ small {
   header .view-toggle,
   .no-print,
   #viewConfig,
+  #viewGestion .filters-bar,
+  #viewGestion .pagination,
+  #viewGestion .calendar-nav,
+  #viewGestion #addManualGuardBtn,
   #viewReportes .form-row,
   #viewReportes label,
   #viewReportes select,
   #viewReportes .btn,
-  #viewGestion .btn,
-  #viewGestion .filters-bar,
-  #viewGestion .pagination,
-  #viewGestion .calendar-nav,
-  #viewGestion #addManualGuardBtn {
+  .calendar-note {
     display: none !important;
   }
 
-  #viewGestion,
-  #viewReportes {
+  /* Mostrar solo la vista activa */
+  .view-section {
+    display: none !important;
+  }
+  .view-section.active-view {
     display: block !important;
   }
 
+  /* En gestión, mostrar solo la subvista activa (tabla o calendario) */
+  #viewGestion.view-table #calendarViewSection {
+    display: none !important;
+  }
+  #viewGestion.view-calendar #tableViewSection {
+    display: none !important;
+  }
+
+  /* Ocultar columna de acciones en la tabla */
+  #guardsTable th:last-child,
+  #guardsTable td:last-child {
+    display: none !important;
+  }
+
+  /* Ajustes de estilo para impresión */
   .table-wrapper {
     border: none !important;
     box-shadow: none !important;
+    overflow: visible !important;
   }
-
   table {
     font-size: 12px;
     width: 100%;
+    border-collapse: collapse;
   }
   th, td {
     padding: 6px 8px;
     border: 1px solid #ccc;
   }
-
   .stat-card {
     break-inside: avoid;
     page-break-inside: avoid;
@@ -753,11 +772,6 @@ small {
     grid-template-columns: repeat(2, 1fr);
     gap: 10px;
   }
-
-  td:last-child, th:last-child {
-    display: none;
-  }
-
   header h1 {
     font-size: 20px;
   }
@@ -765,13 +779,6 @@ small {
     box-shadow: none !important;
     border: 1px solid #ddd !important;
   }
-  .table-wrapper {
-    overflow: visible !important;
-  }
-  .calendar-note {
-    display: none !important;
-  }
-
   body {
     padding: 10mm !important;
     background: white !important;

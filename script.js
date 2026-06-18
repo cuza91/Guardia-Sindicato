@@ -865,12 +865,16 @@ function setView(view) {
   const tableViewSection = document.getElementById("tableViewSection");
   const calendarViewSection = document.getElementById("calendarViewSection");
   const filtersSection = document.getElementById("filtersSection");
+  const gestionView = document.getElementById("viewGestion");
+
   if (view === "table") {
     tableViewBtn.classList.add("active");
     calendarViewBtn.classList.remove("active");
     tableViewSection.style.display = "block";
     calendarViewSection.style.display = "none";
     filtersSection.style.display = "block";
+    gestionView.classList.remove("view-calendar");
+    gestionView.classList.add("view-table");
     applyFiltersAndRenderTable();
     setTimeout(() => bindSortingEvents(), 10);
   } else {
@@ -879,17 +883,28 @@ function setView(view) {
     tableViewSection.style.display = "none";
     calendarViewSection.style.display = "block";
     filtersSection.style.display = "none";
+    gestionView.classList.remove("view-table");
+    gestionView.classList.add("view-calendar");
     renderCalendar();
   }
 }
 
 // ---------- NAVEGACIÓN ENTRE VISTAS ----------
 function setActiveView(view) {
+  // Ocultar todas
   document.getElementById('viewGestion').style.display = 'none';
   document.getElementById('viewReportes').style.display = 'none';
   document.getElementById('viewConfig').style.display = 'none';
-  document.getElementById(`view${view}`).style.display = 'block';
 
+  // Mostrar la seleccionada
+  const activeView = document.getElementById(`view${view}`);
+  activeView.style.display = 'block';
+
+  // Quitar clase active-view de todas y ponerla en la activa
+  document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active-view'));
+  activeView.classList.add('active-view');
+
+  // Actualizar botones del menú
   const navBtns = document.querySelectorAll('.main-nav .btn');
   navBtns.forEach(btn => btn.classList.remove('active', 'primary'));
   navBtns.forEach(btn => btn.classList.add('outline'));
