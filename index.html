@@ -40,6 +40,8 @@
           <div class="header-right">
             <span id="userInfo" class="user-info">👤 Admin</span>
             <button id="logoutBtn" class="btn logout-btn" title="Cerrar sesión">✖</button>
+            <!-- NUEVO BOTÓN JSON (solo visible para admin) -->
+            <button id="downloadJsonBtn" class="btn outline small" title="Descargar JSON base" style="display:none;">📥 Exportar Base de Datos</button>
             <div class="view-toggle" id="viewToggleHeader">
               <button id="tableViewBtn" class="btn small active">📋 Tabla</button>
               <button id="calendarViewBtn" class="btn small">📅 Calendario</button>
@@ -186,7 +188,7 @@
                 <select id="summaryFilter" style="flex: 2">
                   <option value="all">Todos los trabajadores que tienen Guardias</option>
                   <option value="noGuards">Sin guardias Asignadas</option>
-                  <option value="noCompleted">Sin Realizadas</option>
+                  <option value="noCompleted">Sin guardias Realizadas</option>
                 </select>
               </div>
               <div id="summaryStats" class="stats-container">

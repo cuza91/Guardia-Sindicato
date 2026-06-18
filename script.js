@@ -1343,6 +1343,12 @@ function applyRoleBasedUI() {
   } else if (filterWorker) {
     filterWorker.style.display = '';
   }
+
+  // Mostrar/ocultar botón de descarga JSON
+  const downloadJsonBtn = document.getElementById('downloadJsonBtn');
+  if (downloadJsonBtn) {
+    downloadJsonBtn.style.display = isAdminUser ? '' : 'none';
+  }
 }
 
 function refreshUI() {
@@ -1471,6 +1477,9 @@ function bindEvents() {
       this.textContent = "🔽 Filtros";
     }
   });
+
+  // Evento para descargar JSON (botón solo visible para admin)
+  document.getElementById("downloadJsonBtn")?.addEventListener("click", downloadCurrentDataAsJson);
 }
 
 function handleLogin() {
