@@ -232,7 +232,7 @@
       "workerId": 1781469978351,
       "completed": true,
       "catedra": "FPT",
-      "notes": "No Verificada en el Libro"
+      "notes": ""
     },
     {
       "id": 13,
@@ -270,7 +270,7 @@
       "id": 17,
       "date": "2026-06-18",
       "workerId": 1781469978348,
-      "completed": false,
+      "completed": true,
       "catedra": "FPT",
       "notes": ""
     },
@@ -307,7 +307,7 @@
       "notes": ""
     },
     {
-      "id": 23,
+      "id": 24,
       "date": "2026-06-30",
       "workerId": 1781469978357,
       "completed": false,
@@ -315,8 +315,22 @@
       "notes": ""
     }
   ],
-  "guardDays": [],
+  "guardDays": [
+    "2026-01-03",
+    "2026-06-02",
+    "2026-06-04",
+    "2026-06-09",
+    "2026-06-11",
+    "2026-06-15",
+    "2026-06-16",
+    "2026-06-18",
+    "2026-06-22",
+    "2026-06-24",
+    "2026-06-25",
+    "2026-06-29",
+    "2026-06-30"
+  ],
   "currentYear": 2026,
   "lastWorkerIndexForDays": 0,
-  "exportDate": "2026-06-17T12:29:48.308Z"
+  "exportDate": "2026-06-18T21:15:43.579Z"
 }
