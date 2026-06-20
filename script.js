@@ -6,8 +6,6 @@ import { initializeApp } from 'firebase/app';
 import {
   getAuth,
   signInWithEmailAndPassword,
-  signInWithPopup,
-  GoogleAuthProvider,
   signOut,
   onAuthStateChanged
 } from 'firebase/auth';
@@ -39,7 +37,6 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
-const provider = new GoogleAuthProvider();
 
 // ----- VARIABLES GLOBALES -----
 let workers = [];
@@ -167,25 +164,6 @@ async function login(email, password) {
     return userCredential.user;
   } catch (error) {
     throw new Error(error.message);
-  }
-}
-
-async function signInWithGoogle() {
-  try {
-    const result = await signInWithPopup(auth, provider);
-    // El usuario ya está autenticado, onAuthStateChanged se encargará del resto
-    return result.user;
-  } catch (error) {
-    if (error.code === 'auth/popup-closed-by-user') {
-      // El usuario cerró la ventana emergente, no hacemos nada
-      return null;
-    } else if (error.code === 'auth/account-exists-with-different-credential') {
-      alert('Ya existe una cuenta con este email usando otro método de autenticación. Por favor, inicia sesión con ese método.');
-      return null;
-    } else {
-      alert('Error al iniciar sesión con Google: ' + error.message);
-      return null;
-    }
   }
 }
 
@@ -1516,13 +1494,6 @@ async function handleLogin() {
   }
 }
 
-async function handleGoogleLogin() {
-  const errorEl = document.getElementById('loginError');
-  errorEl.style.display = 'none';
-  await signInWithGoogle();
-  // onAuthStateChanged se encarga del resto
-}
-
 function handleLogout() {
   logout();
 }
@@ -1638,7 +1609,6 @@ function bindEvents() {
   document.getElementById('reportMonth')?.addEventListener('change', renderSummary);
 
   document.getElementById('loginBtn')?.addEventListener('click', handleLogin);
-  document.getElementById('googleLoginBtn')?.addEventListener('click', handleGoogleLogin);
   document.getElementById('loginPassword')?.addEventListener('keypress', (e) => {
     if (e.key === 'Enter') handleLogin();
   });
@@ -1669,4 +1639,4 @@ function bindEvents() {
 // ----- INICIO -----
 bindEvents();
 
-console.log('✅ App conectada a Firebase con Google Auth');
+console.log('✅ App conectada a Firebase');
