@@ -61,7 +61,7 @@ function loadData() {
   updateReportYearFilter();
 }
 
-// ---------- CARGA INICIAL DESDE JSON ----------
+// ---------- CARGA INICIAL DESDE JSON (SIEMPRE SE DESCARGA) ----------
 async function loadInitialDataFromJson() {
   try {
     const response = await fetch("base.json");
@@ -84,6 +84,8 @@ async function loadInitialDataFromJson() {
       "No se pudo cargar base.json, usando datos existentes en localStorage o vacíos.",
       error,
     );
+    // Si falla, intentamos cargar lo que haya en localStorage (por si acaso)
+    loadData();
     return false;
   }
 }
@@ -1822,7 +1824,8 @@ function bindEvents() {
     });
 }
 
-function handleLogin() {
+// ---------- handleLogin AHORA ES async ----------
+async function handleLogin() {
   console.log("handleLogin() llamado");
   const username = document.getElementById("loginUsername").value.trim();
   const password = document.getElementById("loginPassword").value.trim();
@@ -1841,8 +1844,10 @@ function handleLogin() {
     errorEl.style.display = "none";
     document.getElementById("loginModal").style.display = "none";
     document.getElementById("appContent").style.display = "block";
-    // Cargar datos desde localStorage (ya están cargados en init)
-    loadData();
+
+    // 🔁 FORZAR RECARGA DE base.json al iniciar sesión
+    await loadInitialDataFromJson();  // Descarga y guarda en localStorage
+    loadData();                       // Carga en memoria
     refreshUI();
     setActiveView("Gestion");
     setView("table");
@@ -1886,15 +1891,9 @@ async function loadUsers() {
 async function init() {
   await loadUsers();
 
-  // Intentar cargar desde localStorage primero
-  const hasLocalData = localStorage.getItem(STORAGE_WORKERS) !== null;
-  if (!hasLocalData) {
-    // Si no hay datos en localStorage, intentar cargar desde base.json
-    await loadInitialDataFromJson();
-  } else {
-    // Cargar datos desde localStorage a la memoria
-    loadData();
-  }
+  // 🔁 SIEMPRE descargar base.json al abrir la aplicación
+  await loadInitialDataFromJson();  // Sobrescribe localStorage con el archivo
+  loadData();                       // Carga en memoria
 
   const hasSession = loadSession();
   if (hasSession) {
@@ -1910,8 +1909,6 @@ async function init() {
 
   bindEvents();
 
-  // Agregar botón para descargar JSON (opcional, se puede poner en la interfaz)
-  // Puedes añadirlo en el HTML, pero por ahora lo dejamos como una función accesible desde consola
   console.log("Para descargar el JSON actual, usa downloadCurrentDataAsJson()");
 }
 
