@@ -48,3 +48,8 @@ user
 documento:uid
 role: admin - worker
 workerId: string
+
+Supabase
+
+https://gqhkdimodsiueezwuorp.supabase.co
+sb_publishable_pLTf_UtvG1DuBn946uQLgA_K4QmqTGM
