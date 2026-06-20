@@ -108,7 +108,7 @@ async function loadAllData() {
 
 // --- Trabajadores ---
 async function addWorkerToFirestore(name) {
-  const id = Date.now().toString();
+  const id = Date.now().toString(); // <-- string
   await setDoc(doc(db, 'workers', id), { id, name });
 }
 
@@ -123,10 +123,16 @@ async function deleteWorkerFromFirestore(id) {
 // --- Guardias ---
 async function addGuardToFirestore(guard) {
   const id = guard.id ? guard.id.toString() : Date.now().toString();
-  await setDoc(doc(db, 'guards', id), { ...guard, id });
+  // Asegurar que workerId sea string o null
+  const workerId = guard.workerId !== undefined && guard.workerId !== null ? String(guard.workerId) : null;
+  await setDoc(doc(db, 'guards', id), { ...guard, id, workerId });
 }
 
 async function updateGuardInFirestore(id, data) {
+  // Asegurar que workerId sea string o null si se está actualizando
+  if (data.workerId !== undefined) {
+    data.workerId = data.workerId !== null ? String(data.workerId) : null;
+  }
   await updateDoc(doc(db, 'guards', id), data);
 }
 
@@ -197,10 +203,11 @@ function renderWorkersList() {
     container.appendChild(tag);
   });
 
+  // Editar trabajador (sin parseInt)
   document.querySelectorAll('.edit-worker').forEach((btn) => {
     btn.addEventListener('click', async () => {
       if (!isAdmin()) return alert('No tienes permisos.');
-      const id = btn.dataset.id;
+      const id = btn.dataset.id; // <-- string
       const worker = workers.find(w => w.id === id);
       if (worker) {
         const newName = prompt('Editar nombre:', worker.name);
@@ -213,10 +220,11 @@ function renderWorkersList() {
     });
   });
 
+  // Eliminar trabajador (sin parseInt)
   document.querySelectorAll('.delete-worker').forEach((btn) => {
     btn.addEventListener('click', async () => {
       if (!isAdmin()) return alert('No tienes permisos.');
-      const id = btn.dataset.id;
+      const id = btn.dataset.id; // <-- string
       const worker = workers.find(w => w.id === id);
       if (!worker) return;
 
@@ -375,7 +383,7 @@ async function generateGuardsFromDays() {
     const newGuard = {
       id,
       date,
-      workerId: worker.id,
+      workerId: worker.id, // worker.id ya es string
       completed: false,
       catedra: '',
       notes: ''
@@ -407,7 +415,7 @@ function generateGuardsForYear(year) {
       newGuards.push({
         id: 0,
         date: formatted,
-        workerId: worker.id,
+        workerId: worker.id, // string
         completed: false,
         catedra: '',
         notes: ''
@@ -471,7 +479,7 @@ function renderWorkerSelectForManual(filterText = '') {
   } else {
     filtered.forEach(w => {
       const opt = document.createElement('option');
-      opt.value = w.id;
+      opt.value = w.id; // string
       opt.textContent = w.name;
       workerSelect.appendChild(opt);
     });
@@ -483,7 +491,7 @@ async function saveManualGuard() {
   if (!isAdmin()) return alert('No tienes permisos.');
   const fechaStr = document.getElementById('manualDate').value;
   const workerSelect = document.getElementById('manualWorker');
-  const workerId = workerSelect.value ? workerSelect.value : null;
+  const workerId = workerSelect.value ? String(workerSelect.value) : null; // <-- string
   const catedra = document.getElementById('manualCatedra').value.trim();
   const notes = document.getElementById('manualNotes').value.trim();
   if (!fechaStr) return alert('Selecciona fecha.');
@@ -566,7 +574,7 @@ function applyFiltersAndRenderTable() {
   if (filterWorker === 'none')
     filtered = filtered.filter(g => g.workerId == null);
   else if (filterWorker !== 'all')
-    filtered = filtered.filter(g => g.workerId === parseInt(filterWorker));
+    filtered = filtered.filter(g => g.workerId === filterWorker); // ambos string
   if (filterCatedra !== 'all')
     filtered = filtered.filter(g => (g.catedra || '') === filterCatedra);
 
@@ -605,7 +613,8 @@ function renderGuardsTablePage() {
   tbody.innerHTML = '';
   const isAdminUser = isAdmin();
   for (const guard of pageGuards) {
-    const worker = guard.workerId ? workers.find(w => w.id === guard.workerId) : null;
+    // Comparar como strings
+    const worker = guard.workerId ? workers.find(w => String(w.id) === String(guard.workerId)) : null;
     const workerName = worker ? worker.name : (guard.workerId ? '❌ Eliminado' : 'Sin asignar');
     const row = tbody.insertRow();
 
@@ -757,7 +766,7 @@ function openEditModal(guard) {
   workerSelect.innerHTML = '<option value="">— Sin asignar —</option>';
   workers.forEach(w => {
     const opt = document.createElement('option');
-    opt.value = w.id;
+    opt.value = w.id; // string
     opt.textContent = w.name;
     if (w.id === guard.workerId) opt.selected = true;
     workerSelect.appendChild(opt);
@@ -776,7 +785,7 @@ async function saveEditGuard() {
   if (!currentEditingGuard) return;
   const newDate = document.getElementById('editDate').value;
   const workerSelect = document.getElementById('editWorker');
-  const newWorkerId = workerSelect.value || null;
+  const newWorkerId = workerSelect.value ? String(workerSelect.value) : null; // <-- string
   const newCompleted = document.getElementById('editCompleted').checked;
   const newCatedra = document.getElementById('editCatedra').value.trim();
   const newNotes = document.getElementById('editNotes').value.trim();
@@ -789,7 +798,7 @@ async function saveEditGuard() {
     catedra: newCatedra,
     notes: newNotes
   });
-  await loadGuards();
+  await loadAllData();
   closeModal();
   refreshUI();
   alert('Guardia actualizada.');
@@ -826,7 +835,7 @@ function renderCalendar() {
     if (guardsOfDay.length) {
       grid += `<div style="font-size:0.6rem; display:flex; flex-direction:column; gap:1px; max-height:60px; overflow-y:auto;">`;
       guardsOfDay.forEach(g => {
-        const worker = g.workerId ? workers.find(w => w.id === g.workerId) : null;
+        const worker = g.workerId ? workers.find(w => String(w.id) === String(g.workerId)) : null;
         const name = worker ? worker.name : (g.workerId ? '❌' : 'Sin asignar');
         const completedClass = g.completed ? 'completed' : '';
         grid += `<div class="calendar-day-guard ${completedClass}" style="margin:0; padding:0 0.1rem; background:${g.completed ? 'var(--success-light)' : 'var(--primary-light)'};">${escapeHtml(name)} ${g.completed ? '✅' : '⏳'}</div>`;
@@ -1016,24 +1025,35 @@ async function importFromJSON(file) {
       const data = JSON.parse(e.target.result);
       if (!data.workers || !data.guards || data.currentYear === undefined)
         throw new Error('Formato inválido');
-      // Usar batch para escrituras masivas
       const batch = writeBatch(db);
-      // Limpiar datos existentes (opcional: borrar todas las colecciones)
-      // Por simplicidad, sobreescribimos
+      // Limpiar datos existentes (opcional: borrar colecciones)
+      // Para evitar duplicados, recogemos los documentos existentes y los eliminamos
+      const snapshots = await Promise.all([
+        getDocs(workersRef),
+        getDocs(guardsRef),
+        getDocs(guardDaysRef)
+      ]);
+      snapshots[0].docs.forEach(d => batch.delete(d.ref));
+      snapshots[1].docs.forEach(d => batch.delete(d.ref));
+      snapshots[2].docs.forEach(d => batch.delete(d.ref));
+
+      // Insertar nuevos datos
       for (const w of data.workers) {
-        const ref = doc(db, 'workers', w.id.toString());
-        batch.set(ref, w);
+        const id = String(w.id);
+        const ref = doc(db, 'workers', id);
+        batch.set(ref, { ...w, id });
       }
       for (const g of data.guards) {
-        const ref = doc(db, 'guards', g.id.toString());
-        batch.set(ref, g);
+        const id = String(g.id);
+        const workerId = g.workerId !== undefined && g.workerId !== null ? String(g.workerId) : null;
+        const ref = doc(db, 'guards', id);
+        batch.set(ref, { ...g, id, workerId });
       }
       for (const d of (data.guardDays || [])) {
         const ref = doc(db, 'guardDays', d);
         batch.set(ref, { date: d });
       }
       // Configuración
-      const configRef = doc(db, 'config', 'main');
       batch.set(configRef, {
         currentYear: data.currentYear,
         lastWorkerIndexForDays: data.lastWorkerIndexForDays || 0
@@ -1071,15 +1091,14 @@ async function importWorkersFromJSON(file) {
       if (!newWorkers || !Array.isArray(newWorkers)) throw new Error('Formato inválido');
       if (newWorkers.length === 0) {
         if (confirm('Borrar todos los trabajadores actuales?')) {
-          // Borrar todo
-          const snapshot = await getDocs(workersRef);
           const batch = writeBatch(db);
-          snapshot.docs.forEach(doc => batch.delete(doc.ref));
-          // También borrar guardias y días (opcional)
+          const workersSnap = await getDocs(workersRef);
+          workersSnap.docs.forEach(d => batch.delete(d.ref));
+          // También borrar guardias y días
           const guardsSnap = await getDocs(guardsRef);
-          guardsSnap.docs.forEach(doc => batch.delete(doc.ref));
+          guardsSnap.docs.forEach(d => batch.delete(d.ref));
           const daysSnap = await getDocs(guardDaysRef);
-          daysSnap.docs.forEach(doc => batch.delete(doc.ref));
+          daysSnap.docs.forEach(d => batch.delete(d.ref));
           await batch.commit();
           await loadAllData();
           refreshUI();
@@ -1091,18 +1110,20 @@ async function importWorkersFromJSON(file) {
         throw new Error('Estructura incorrecta');
       // Sobrescribir trabajadores
       const batch = writeBatch(db);
-      // Limpiar workers existentes
-      const snapshot = await getDocs(workersRef);
-      snapshot.docs.forEach(doc => batch.delete(doc.ref));
-      for (const w of newWorkers) {
-        const ref = doc(db, 'workers', w.id.toString());
-        batch.set(ref, w);
-      }
-      // También eliminar guardias para evitar inconsistencias
+      // Eliminar trabajadores existentes
+      const workersSnap = await getDocs(workersRef);
+      workersSnap.docs.forEach(d => batch.delete(d.ref));
+      // Eliminar guardias y días para evitar inconsistencias
       const guardsSnap = await getDocs(guardsRef);
-      guardsSnap.docs.forEach(doc => batch.delete(doc.ref));
+      guardsSnap.docs.forEach(d => batch.delete(d.ref));
       const daysSnap = await getDocs(guardDaysRef);
-      daysSnap.docs.forEach(doc => batch.delete(doc.ref));
+      daysSnap.docs.forEach(d => batch.delete(d.ref));
+
+      for (const w of newWorkers) {
+        const id = String(w.id);
+        const ref = doc(db, 'workers', id);
+        batch.set(ref, { ...w, id });
+      }
       await batch.commit();
       await loadAllData();
       refreshUI();
@@ -1410,7 +1431,7 @@ function updateFilterWorkerSelect() {
     opt.textContent = w.name;
     select.appendChild(opt);
   });
-  if (currentVal !== 'all' && currentVal !== 'none' && workers.some(w => w.id == currentVal)) {
+  if (currentVal !== 'all' && currentVal !== 'none' && workers.some(w => w.id === currentVal)) {
     select.value = currentVal;
   } else {
     select.value = 'all';

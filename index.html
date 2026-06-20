@@ -17,7 +17,11 @@
         <h2>🔐 Iniciar Sesión</h2>
         <div class="form-group">
           <label>📧 Email:</label>
-          <input type="email" id="loginUsername" placeholder="ej: admin@correo.com" />
+          <input
+            type="email"
+            id="loginUsername"
+            placeholder="ej: admin@correo.com"
+          />
         </div>
         <div class="form-group">
           <label>🔑 Contraseña:</label>
@@ -60,15 +64,7 @@
             <button id="logoutBtn" class="btn logout-btn" title="Cerrar sesión">
               ✖
             </button>
-            <!-- NUEVO BOTÓN JSON (solo visible para admin) -->
-            <button
-              id="downloadJsonBtn"
-              class="btn outline small"
-              title="Descargar JSON base"
-              style="display: none"
-            >
-              📥 Exportar Base de Datos
-            </button>
+
             <div class="view-toggle" id="viewToggleHeader">
               <button id="tableViewBtn" class="btn small active">
                 📋 Tabla
