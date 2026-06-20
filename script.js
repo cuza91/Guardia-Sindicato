@@ -1601,12 +1601,6 @@ function applyRoleBasedUI() {
   } else if (filterWorker) {
     filterWorker.style.display = "";
   }
-
-  // Mostrar/ocultar botón de descarga JSON
-  const downloadJsonBtn = document.getElementById("downloadJsonBtn");
-  if (downloadJsonBtn) {
-    downloadJsonBtn.style.display = isAdminUser ? "" : "none";
-  }
 }
 
 function refreshUI() {
@@ -1652,9 +1646,10 @@ function bindEvents() {
   document
     .getElementById("addManualGuardBtn")
     ?.addEventListener("click", openManualModal);
+  // El botón "Exportar Datos" ahora usa downloadCurrentDataAsJson
   document
     .getElementById("exportDataBtn")
-    ?.addEventListener("click", exportToJSON);
+    ?.addEventListener("click", downloadCurrentDataAsJson);
   document
     .getElementById("exportCsvBtn")
     ?.addEventListener("click", exportToCSV);
@@ -1825,11 +1820,6 @@ function bindEvents() {
         this.textContent = "🔽 Filtros";
       }
     });
-
-  // Evento para descargar JSON (botón solo visible para admin)
-  document
-    .getElementById("downloadJsonBtn")
-    ?.addEventListener("click", downloadCurrentDataAsJson);
 }
 
 function handleLogin() {
