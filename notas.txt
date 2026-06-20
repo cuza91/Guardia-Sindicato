@@ -42,3 +42,9 @@ const analytics = getAnalytics(app);
 
 uid: ljOraLMs9hPN1s3puRSg4Ln72003
 
+
+user
+
+documento:uid
+role: admin - worker
+workerId: string
