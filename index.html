@@ -16,8 +16,8 @@
       <div class="modal-content" style="max-width: 400px">
         <h2>🔐 Iniciar Sesión</h2>
         <div class="form-group">
-          <label>👤 Usuario:</label>
-          <input type="text" id="loginUsername" placeholder="Ej: admin" />
+          <label>📧 Email:</label>
+          <input type="email" id="loginUsername" placeholder="ej: admin@correo.com" />
         </div>
         <div class="form-group">
           <label>🔑 Contraseña:</label>
@@ -596,6 +596,17 @@
       </div>
     </div>
 
-    <script src="script.js"></script>
+    <!-- Firebase SDK -->
+    <script type="importmap">
+      {
+        "imports": {
+          "firebase/app": "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js",
+          "firebase/auth": "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js",
+          "firebase/firestore": "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js"
+        }
+      }
+    </script>
+
+    <script type="module" src="script.js"></script>
   </body>
 </html>
