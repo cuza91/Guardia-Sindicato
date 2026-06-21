@@ -19,7 +19,7 @@ try {
 function sendJsonResponse($data, $status = 200) {
     http_response_code($status);
     header('Content-Type: application/json');
-    echo json_encode($data);
+    echo json_encode($data, JSON_UNESCAPED_UNICODE);
     exit;
 }
 
@@ -27,4 +27,10 @@ function sendJsonResponse($data, $status = 200) {
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type');
+
+// Manejar preflight requests
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(200);
+    exit;
+}
 ?>

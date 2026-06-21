@@ -7,7 +7,6 @@ $input = json_decode(file_get_contents('php://input'), true);
 
 switch ($method) {
     case 'GET':
-        // Obtener guardias con filtros
         $filters = [];
         $params = [];
         
@@ -58,26 +57,38 @@ switch ($method) {
         break;
         
     case 'POST':
-        // Crear nueva guardia
         if (!isset($input['fecha'])) {
             sendJsonResponse(['error' => 'Fecha requerida'], 400);
         }
         
-        $stmt = $pdo->prepare("INSERT INTO guardias (fecha, worker_id, completada, catedra, notas) VALUES (?, ?, ?, ?, ?)");
-        $stmt->execute([
-            $input['fecha'],
-            $input['worker_id'] ?? null,
-            $input['completada'] ?? 0,
-            $input['catedra'] ?? '',
-            $input['notas'] ?? ''
-        ]);
-        
-        $id = $pdo->lastInsertId();
-        sendJsonResponse(['success' => true, 'id' => $id], 201);
+        // Si se envía un ID específico
+        if (isset($input['id']) && $input['id']) {
+            $id = $input['id'];
+            $stmt = $pdo->prepare("INSERT INTO guardias (id, fecha, worker_id, completada, catedra, notas) VALUES (?, ?, ?, ?, ?, ?)");
+            $stmt->execute([
+                $id,
+                $input['fecha'],
+                $input['worker_id'] ?? null,
+                $input['completada'] ?? 0,
+                $input['catedra'] ?? '',
+                $input['notas'] ?? ''
+            ]);
+            sendJsonResponse(['success' => true, 'id' => $id], 201);
+        } else {
+            $stmt = $pdo->prepare("INSERT INTO guardias (fecha, worker_id, completada, catedra, notas) VALUES (?, ?, ?, ?, ?)");
+            $stmt->execute([
+                $input['fecha'],
+                $input['worker_id'] ?? null,
+                $input['completada'] ?? 0,
+                $input['catedra'] ?? '',
+                $input['notas'] ?? ''
+            ]);
+            $id = $pdo->lastInsertId();
+            sendJsonResponse(['success' => true, 'id' => $id], 201);
+        }
         break;
         
     case 'PUT':
-        // Actualizar guardia
         $id = isset($_GET['id']) ? $_GET['id'] : null;
         if (!$id) {
             sendJsonResponse(['error' => 'ID requerido'], 400);
@@ -120,16 +131,21 @@ switch ($method) {
         break;
         
     case 'DELETE':
-        // Eliminar guardia
-        $id = isset($_GET['id']) ? $_GET['id'] : null;
-        if (!$id) {
-            sendJsonResponse(['error' => 'ID requerido'], 400);
+        if (isset($_GET['id'])) {
+            $id = $_GET['id'];
+            $stmt = $pdo->prepare("DELETE FROM guardias WHERE id = ?");
+            $stmt->execute([$id]);
+            sendJsonResponse(['success' => true]);
+        } elseif (isset($_GET['worker_id'])) {
+            $workerId = $_GET['worker_id'];
+            $stmt = $pdo->prepare("DELETE FROM guardias WHERE worker_id = ?");
+            $stmt->execute([$workerId]);
+            sendJsonResponse(['success' => true]);
+        } else {
+            // Eliminar todas las guardias
+            $pdo->exec("DELETE FROM guardias");
+            sendJsonResponse(['success' => true]);
         }
-        
-        $stmt = $pdo->prepare("DELETE FROM guardias WHERE id = ?");
-        $stmt->execute([$id]);
-        
-        sendJsonResponse(['success' => true]);
         break;
         
     default:

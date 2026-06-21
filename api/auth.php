@@ -21,7 +21,7 @@ switch ($action) {
         $stmt->execute([$data['username'], $data['password']]);
         $user = $stmt->fetch();
         
-        if ($user)composer require --dev clearlyip/mago-lsp {
+        if ($user) {
             sendJsonResponse([
                 'success' => true,
                 'user' => [

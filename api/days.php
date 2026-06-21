@@ -17,7 +17,6 @@ switch ($method) {
             sendJsonResponse(['error' => 'Fecha requerida'], 400);
         }
         
-        // Verificar si ya existe
         $stmt = $pdo->prepare("SELECT COUNT(*) FROM dias_guardia WHERE fecha = ?");
         $stmt->execute([$input['fecha']]);
         if ($stmt->fetchColumn() > 0) {
@@ -31,15 +30,16 @@ switch ($method) {
         break;
         
     case 'DELETE':
-        $fecha = isset($_GET['fecha']) ? $_GET['fecha'] : null;
-        if (!$fecha) {
-            sendJsonResponse(['error' => 'Fecha requerida'], 400);
+        if (isset($_GET['fecha'])) {
+            $fecha = $_GET['fecha'];
+            $stmt = $pdo->prepare("DELETE FROM dias_guardia WHERE fecha = ?");
+            $stmt->execute([$fecha]);
+            sendJsonResponse(['success' => true]);
+        } else {
+            // Eliminar todos los días
+            $pdo->exec("DELETE FROM dias_guardia");
+            sendJsonResponse(['success' => true]);
         }
-        
-        $stmt = $pdo->prepare("DELETE FROM dias_guardia WHERE fecha = ?");
-        $stmt->execute([$fecha]);
-        
-        sendJsonResponse(['success' => true]);
         break;
         
     default:
