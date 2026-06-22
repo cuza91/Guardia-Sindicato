@@ -139,4 +139,4 @@ qxDWLdM56UKAUZ - MySQL Password
 if0_42239270_XXX - MySQL Database Name
 sql102.infinityfree.com  - MySQL Hostname
 3306 - MySQL Port (optional)
-f0_42239270_sindicato_guardias  - MySQL Database Name Complete
+if0_42239270_sindicato_guardias   - MySQL Database Name Complete
