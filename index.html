@@ -411,6 +411,35 @@
                   manualmente.</small
                 >
               </div>
+
+              <!-- Usuarios -->
+              <div class="config-block" style="grid-column: 1 / -1">
+                <h3>👥 Gestión de Usuarios</h3>
+                <div class="form-row">
+                  <input
+                    type="text"
+                    id="newUsername"
+                    placeholder="Usuario"
+                    autocomplete="off"
+                    style="flex: 1"
+                  />
+                  <input
+                    type="password"
+                    id="newPassword"
+                    placeholder="Contraseña"
+                    style="flex: 1"
+                  />
+                  <select id="newUserRole" style="flex: 0.5">
+                    <option value="worker">Trabajador</option>
+                    <option value="admin">Administrador</option>
+                  </select>
+                  <select id="newUserWorker" style="flex: 1">
+                    <option value="">Sin asociar</option>
+                  </select>
+                  <button id="addUserBtn" class="btn primary">➕ Añadir</button>
+                </div>
+                <div id="usersList" class="items-list users-list"></div>
+              </div>
             </div>
           </section>
 

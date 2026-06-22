@@ -353,6 +353,36 @@ select:focus {
   background: rgba(0, 0, 0, 0.05);
 }
 
+/* ----- User items (nuevo) ----- */
+.user-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: white;
+  padding: 0.5rem 1rem;
+  border-radius: var(--border-radius);
+  border: 1px solid var(--gray-300);
+  margin-bottom: 0.3rem;
+  width: 100%;
+}
+.user-item button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+  padding: 0.2rem 0.4rem;
+  border-radius: var(--border-radius-sm);
+}
+.user-item button.edit-user {
+  color: var(--primary);
+}
+.user-item button.delete-user {
+  color: var(--danger);
+}
+.user-item button:hover {
+  background: var(--gray-200);
+}
+
 /* ----- ACTIONS BAR ----- */
 .actions-grid {
   display: flex;

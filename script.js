@@ -24,11 +24,10 @@ let currentEditingDay = null;
 let currentUser = null;
 
 // ---------- API BASE URL ----------
-// Usa la ruta relativa para que funcione en cualquier carpeta
 const API_URL = "api/";
 
-// ---------- USUARIOS (cargados desde JSON externo) ----------
-let USERS = [];
+// ---------- USUARIOS (desde API) ----------
+let users = [];
 
 // ---------- CLAVES LOCALSTORAGE (fallback) ----------
 const STORAGE_WORKERS = "sindicato_workers";
@@ -40,7 +39,6 @@ const STORAGE_SESSION = "sindicato_session";
 
 // ---------- FUNCIONES DE PERSISTENCIA CON API ----------
 async function saveData() {
-  // Guardar configuración en la base de datos
   try {
     await fetch(API_URL + "config.php", {
       method: "POST",
@@ -60,7 +58,6 @@ async function saveData() {
     });
   } catch (e) {
     console.error("Error guardando configuración:", e);
-    // Fallback a localStorage
     saveToLocalStorage();
   }
 }
@@ -75,25 +72,21 @@ function saveToLocalStorage() {
 
 async function loadData() {
   try {
-    // Cargar trabajadores
     const workersRes = await fetch(API_URL + "workers.php");
     if (!workersRes.ok) throw new Error("Error cargando trabajadores");
     workers = await workersRes.json();
     if (!Array.isArray(workers)) workers = [];
 
-    // Cargar guardias
     const guardsRes = await fetch(API_URL + "guards.php");
     if (!guardsRes.ok) throw new Error("Error cargando guardias");
     guards = await guardsRes.json();
     if (!Array.isArray(guards)) guards = [];
 
-    // Cargar días de guardia
     const daysRes = await fetch(API_URL + "days.php");
     if (!daysRes.ok) throw new Error("Error cargando días");
     guardDays = await daysRes.json();
     if (!Array.isArray(guardDays)) guardDays = [];
 
-    // Cargar configuración
     const configRes = await fetch(API_URL + "config.php");
     if (!configRes.ok) throw new Error("Error cargando configuración");
     const config = await configRes.json();
@@ -105,9 +98,9 @@ async function loadData() {
     updateFilterYearSelect();
     updateFilterCatedraSelect();
     updateReportYearFilter();
+    updateUserWorkerSelect();
   } catch (e) {
     console.error("Error cargando datos desde API:", e);
-    // Si falla, intentar cargar desde localStorage como fallback
     loadFromLocalStorage();
   }
 }
@@ -129,28 +122,25 @@ function loadFromLocalStorage() {
   updateFilterYearSelect();
   updateFilterCatedraSelect();
   updateReportYearFilter();
+  updateUserWorkerSelect();
 }
 
 // ---------- CARGA INICIAL DESDE JSON ----------
 async function loadInitialDataFromJson() {
   try {
-    // Verificar si ya hay datos en la base de datos
     const workersRes = await fetch(API_URL + "workers.php");
     if (workersRes.ok) {
       const existingWorkers = await workersRes.json();
       if (existingWorkers.length > 0) {
-        // Ya hay datos, no sobrescribir
         await loadData();
         return true;
       }
     }
 
-    // Si no hay datos, cargar desde base.json
     const response = await fetch("base.json");
     if (!response.ok) throw new Error("No se pudo cargar base.json");
     const data = await response.json();
 
-    // Insertar trabajadores
     for (const worker of data.workers || []) {
       try {
         await fetch(API_URL + "workers.php", {
@@ -166,7 +156,6 @@ async function loadInitialDataFromJson() {
       }
     }
 
-    // Insertar guardias
     for (const guard of data.guards || []) {
       try {
         await fetch(API_URL + "guards.php", {
@@ -185,7 +174,6 @@ async function loadInitialDataFromJson() {
       }
     }
 
-    // Insertar días de guardia
     for (const day of data.guardDays || []) {
       try {
         await fetch(API_URL + "days.php", {
@@ -198,18 +186,13 @@ async function loadInitialDataFromJson() {
       }
     }
 
-    // Guardar configuración
     currentYear = data.currentYear || 2026;
     lastWorkerIndexForDays = data.lastWorkerIndexForDays || 0;
     await saveData();
-
     await loadData();
     return true;
   } catch (error) {
-    console.warn(
-      "No se pudo cargar base.json, usando datos existentes.",
-      error,
-    );
+    console.warn("No se pudo cargar base.json, usando datos existentes.", error);
     await loadData();
     return false;
   }
@@ -246,12 +229,10 @@ function loadFromFile(file) {
       const data = JSON.parse(e.target.result);
       if (!data.workers || !data.guards) throw new Error("Formato inválido");
 
-      // Limpiar datos existentes
       await fetch(API_URL + "workers.php", { method: "DELETE" });
       await fetch(API_URL + "guards.php", { method: "DELETE" });
       await fetch(API_URL + "days.php", { method: "DELETE" });
 
-      // Insertar nuevos datos
       for (const worker of data.workers) {
         await fetch(API_URL + "workers.php", {
           method: "POST",
@@ -299,17 +280,9 @@ function loadSession() {
   if (sessionStr) {
     try {
       const session = JSON.parse(sessionStr);
-      const user = USERS.find(
-        (u) => u.username === session.username && u.role === session.role,
-      );
-      if (user) {
-        currentUser = {
-          username: user.username,
-          role: user.role,
-          workerId: user.workerId,
-        };
-        return true;
-      }
+      // Verificar contra API? Mejor confiar en el session guardado
+      currentUser = session;
+      return true;
     } catch (e) {}
   }
   return false;
@@ -322,7 +295,7 @@ function saveSession(user) {
       username: user.username,
       role: user.role,
       workerId: user.workerId,
-    }),
+    })
   );
 }
 
@@ -368,12 +341,12 @@ async function handleLogin() {
       document.getElementById("appContent").style.display = "block";
 
       await loadData();
+      await loadUsers();
       refreshUI();
       setActiveView("Gestion");
       setView("table");
     } else {
-      errorEl.textContent =
-        "❌ " + (result.error || "Credenciales incorrectas.");
+      errorEl.textContent = "❌ " + (result.error || "Credenciales incorrectas.");
       errorEl.style.display = "block";
     }
   } catch (e) {
@@ -393,7 +366,7 @@ function escapeHtml(str) {
   if (!str) return "";
   return str.replace(
     /[&<>]/g,
-    (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" })[m],
+    (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" })[m]
   );
 }
 
@@ -482,7 +455,6 @@ async function renderWorkersList() {
 
       try {
         if (opcion === "1") {
-          // Eliminar trabajador y sus guardias
           await fetch(API_URL + `guards.php?worker_id=${id}`, {
             method: "DELETE",
           });
@@ -490,13 +462,11 @@ async function renderWorkersList() {
           workers = workers.filter((w) => w.id !== id);
           guards = guards.filter((g) => g.worker_id !== id);
           alert(
-            `Trabajador "${worker.nombre}" eliminado junto con sus ${guardCount} guardias.`,
+            `Trabajador "${worker.nombre}" eliminado junto con sus ${guardCount} guardias.`
           );
         } else if (opcion === "2") {
-          // Eliminar trabajador, conservar guardias
           await fetch(API_URL + `workers.php?id=${id}`, { method: "DELETE" });
           workers = workers.filter((w) => w.id !== id);
-          // Actualizar guardias para que queden sin asignar
           for (const guard of guards) {
             if (guard.worker_id === id) {
               guard.worker_id = null;
@@ -508,7 +478,7 @@ async function renderWorkersList() {
             }
           }
           alert(
-            `Trabajador "${worker.nombre}" eliminado. Se conservaron ${guardCount} guardias.`,
+            `Trabajador "${worker.nombre}" eliminado. Se conservaron ${guardCount} guardias.`
           );
         } else if (opcion === "3") {
           if (workers.length === 1) {
@@ -521,7 +491,7 @@ async function renderWorkersList() {
             .join("\n");
           let newWorkerIndex = prompt(
             `Selecciona el trabajador que recibirá las ${guardCount} guardias:\n${workerListStr}`,
-            "1",
+            "1"
           );
           if (newWorkerIndex === null) return;
           newWorkerIndex = parseInt(newWorkerIndex) - 1;
@@ -549,7 +519,7 @@ async function renderWorkersList() {
           await saveData();
           refreshUI();
           alert(
-            `Trabajador "${worker.nombre}" eliminado. ${guardCount} guardias reasignadas a "${newWorker.nombre}".`,
+            `Trabajador "${worker.nombre}" eliminado. ${guardCount} guardias reasignadas a "${newWorker.nombre}".`
           );
           return;
         }
@@ -636,11 +606,9 @@ function importWorkersFromJSON(file) {
       if (!newWorkers.every((w) => w.id && typeof w.nombre === "string"))
         throw new Error("Estructura incorrecta");
 
-      // Eliminar datos existentes
       await fetch(API_URL + "workers.php", { method: "DELETE" });
       await fetch(API_URL + "guards.php", { method: "DELETE" });
 
-      // Insertar nuevos trabajadores
       for (const w of newWorkers) {
         await fetch(API_URL + "workers.php", {
           method: "POST",
@@ -745,12 +713,10 @@ async function saveDayEdit() {
     return alert("Ya existe");
 
   try {
-    // Actualizar día en la lista
     const index = guardDays.indexOf(currentEditingDay);
     if (index !== -1) guardDays[index] = newDate;
     guardDays.sort();
 
-    // Actualizar días en la base de datos
     await fetch(API_URL + `days.php?fecha=${currentEditingDay}`, {
       method: "DELETE",
     });
@@ -760,7 +726,6 @@ async function saveDayEdit() {
       body: JSON.stringify({ fecha: newDate }),
     });
 
-    // Actualizar guardias con la nueva fecha
     for (const guard of guards) {
       if (guard.fecha === currentEditingDay) {
         guard.fecha = newDate;
@@ -821,7 +786,7 @@ async function generateGuardsFromDays() {
 
   const sortedDays = [...guardDays].sort();
   const existingDates = new Set(
-    guards.filter((g) => guardDays.includes(g.fecha)).map((g) => g.fecha),
+    guards.filter((g) => guardDays.includes(g.fecha)).map((g) => g.fecha)
   );
   const newDays = sortedDays.filter((date) => !existingDates.has(date));
   if (!newDays.length)
@@ -895,10 +860,8 @@ function importDaysFromJSON(file) {
       if (!data.guardDays || !Array.isArray(data.guardDays))
         throw new Error("Formato inválido");
 
-      // Eliminar días existentes
       await fetch(API_URL + "days.php", { method: "DELETE" });
 
-      // Insertar nuevos días
       for (const day of data.guardDays) {
         await fetch(API_URL + "days.php", {
           method: "POST",
@@ -957,7 +920,6 @@ async function regenerateGuards() {
   currentYear = year;
 
   try {
-    // Eliminar guardias del año
     for (const guard of guards) {
       if (parseInt(guard.fecha.split("-")[0]) === year) {
         await fetch(API_URL + `guards.php?id=${guard.id}`, {
@@ -987,7 +949,7 @@ async function regenerateGuards() {
     await saveData();
     refreshUI();
     alert(
-      `Guardias generadas para ${year}. Total laborables: ${newGuards.length}.`,
+      `Guardias generadas para ${year}. Total laborables: ${newGuards.length}.`
     );
   } catch (e) {
     alert("Error al regenerar guardias");
@@ -1015,7 +977,7 @@ function renderWorkerSelectForManual(filterText = "") {
   const workerSelect = document.getElementById("manualWorker");
   if (!workerSelect) return;
   const filtered = workers.filter((w) =>
-    w.nombre.toLowerCase().includes(filterText.toLowerCase()),
+    w.nombre.toLowerCase().includes(filterText.toLowerCase())
   );
   workerSelect.innerHTML = '<option value="">— Sin asignar —</option>';
   if (!filtered.length) {
@@ -1087,7 +1049,7 @@ function bindManualSearchEvent() {
   const searchInput = document.getElementById("searchWorkerInput");
   if (searchInput)
     searchInput.addEventListener("input", (e) =>
-      renderWorkerSelectForManual(e.target.value),
+      renderWorkerSelectForManual(e.target.value)
     );
 }
 
@@ -1154,15 +1116,15 @@ function applyFiltersAndRenderTable() {
 
   if (filterDay !== "all")
     filtered = filtered.filter(
-      (g) => parseInt(g.fecha.split("-")[2]) === parseInt(filterDay),
+      (g) => parseInt(g.fecha.split("-")[2]) === parseInt(filterDay)
     );
   if (filterMonth !== "all")
     filtered = filtered.filter(
-      (g) => parseInt(g.fecha.split("-")[1]) === parseInt(filterMonth),
+      (g) => parseInt(g.fecha.split("-")[1]) === parseInt(filterMonth)
     );
   if (filterYear !== "all")
     filtered = filtered.filter(
-      (g) => parseInt(g.fecha.split("-")[0]) === parseInt(filterYear),
+      (g) => parseInt(g.fecha.split("-")[0]) === parseInt(filterYear)
     );
   if (filterWorker === "none")
     filtered = filtered.filter((g) => g.worker_id == null);
@@ -1211,8 +1173,8 @@ function renderGuardsTablePage() {
     const workerName = worker
       ? worker.nombre
       : guard.worker_id
-        ? "❌ Eliminado"
-        : "Sin asignar";
+      ? "❌ Eliminado"
+      : "Sin asignar";
     const row = tbody.insertRow();
 
     const td1 = row.insertCell(0);
@@ -1449,7 +1411,7 @@ function renderCalendar() {
   const daysInMonth = new Date(
     currentCalendarYear,
     currentCalendarMonth + 1,
-    0,
+    0
   ).getDate();
   const monthNames = [
     "Enero",
@@ -1470,7 +1432,7 @@ function renderCalendar() {
   let grid = "";
   const weekdays = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
   weekdays.forEach(
-    (d) => (grid += `<div class="calendar-day-header">${d}</div>`),
+    (d) => (grid += `<div class="calendar-day-header">${d}</div>`)
   );
   for (let i = 0; i < startWeekDay; i++)
     grid += `<div class="calendar-day-cell calendar-empty"></div>`;
@@ -1491,8 +1453,8 @@ function renderCalendar() {
         const name = worker
           ? worker.nombre
           : g.worker_id
-            ? "❌"
-            : "Sin asignar";
+          ? "❌"
+          : "Sin asignar";
         const completedClass = g.completada ? "completed" : "";
         grid += `<div class="calendar-day-guard ${completedClass}" style="margin:0; padding:0 0.1rem; background:${g.completada ? "var(--success-light)" : "var(--primary-light)"};">${escapeHtml(name)} ${g.completada ? "✅" : "⏳"}</div>`;
       });
@@ -1513,7 +1475,7 @@ function renderCalendar() {
         openEditModal(guardsOfDay[0]);
       } else {
         alert(
-          `No hay guardias para ${formatDate(date)}. Puedes añadirla manualmente.`,
+          `No hay guardias para ${formatDate(date)}. Puedes añadirla manualmente.`
         );
       }
     });
@@ -1539,13 +1501,10 @@ function changeMonth(delta) {
 function updateReportYearFilter() {
   const select = document.getElementById("reportYear");
   if (!select) return;
-
-  // Si no hay guardias, mostrar solo "Todos"
   if (!guards || guards.length === 0) {
     select.innerHTML = '<option value="all">Todos</option>';
     return;
   }
-
   const years = [
     ...new Set(
       guards
@@ -1553,7 +1512,7 @@ function updateReportYearFilter() {
           if (!g.fecha) return null;
           return parseInt(g.fecha.split("-")[0]);
         })
-        .filter((y) => y !== null),
+        .filter((y) => y !== null)
     ),
   ].sort((a, b) => a - b);
   const currentVal = select.value;
@@ -1577,12 +1536,12 @@ function getFilteredGuardsForReport() {
   const month = document.getElementById("reportMonth")?.value || "all";
   if (year !== "all") {
     filtered = filtered.filter(
-      (g) => parseInt(g.fecha.split("-")[0]) === parseInt(year),
+      (g) => parseInt(g.fecha.split("-")[0]) === parseInt(year)
     );
   }
   if (month !== "all") {
     filtered = filtered.filter(
-      (g) => parseInt(g.fecha.split("-")[1]) === parseInt(month),
+      (g) => parseInt(g.fecha.split("-")[1]) === parseInt(month)
     );
   }
   return filtered;
@@ -1616,7 +1575,7 @@ function renderSummary() {
   let filteredWorkers = [...workers];
   if (filterValue === "noGuards") {
     filteredWorkers = workers.filter(
-      (w) => !filteredGuards.some((g) => g.worker_id === w.id),
+      (w) => !filteredGuards.some((g) => g.worker_id === w.id)
     );
   } else if (filterValue === "noCompleted") {
     filteredWorkers = workers.filter((w) => {
@@ -1638,7 +1597,7 @@ function renderSummary() {
     let workersToShow = filteredWorkers;
     if (filterValue === "all") {
       workersToShow = workers.filter((w) =>
-        filteredGuards.some((g) => g.worker_id === w.id),
+        filteredGuards.some((g) => g.worker_id === w.id)
       );
       if (workersToShow.length === 0) {
         html += `<p style="grid-column:1/-1; text-align:center; color:var(--gray-600);">Ningún trabajador tiene guardias en el período seleccionado.</p>`;
@@ -1681,7 +1640,7 @@ function renderSummary() {
     catedraHtml = "<p>No hay cátedras definidas en las guardias.</p>";
   } else {
     const sorted = Array.from(catedraMap.entries()).sort(
-      (a, b) => b[1].total - a[1].total,
+      (a, b) => b[1].total - a[1].total
     );
     for (const [catedra, stats] of sorted) {
       const percent = stats.total
@@ -1702,7 +1661,7 @@ function exportToJSON() {
   if (!isAdmin()) return alert("No tienes permisos.");
   let fileName = prompt(
     "Nombre del archivo:",
-    `guardias_sindicato_${currentYear}`,
+    `guardias_sindicato_${currentYear}`
   );
   if (!fileName) return;
   if (!fileName.endsWith(".json")) fileName += ".json";
@@ -1733,12 +1692,10 @@ function importFromJSON(file) {
       if (!data.workers || !data.guards || data.currentYear === undefined)
         throw new Error("Formato inválido");
 
-      // Limpiar datos existentes
       await fetch(API_URL + "workers.php", { method: "DELETE" });
       await fetch(API_URL + "guards.php", { method: "DELETE" });
       await fetch(API_URL + "days.php", { method: "DELETE" });
 
-      // Insertar trabajadores
       for (const w of data.workers) {
         await fetch(API_URL + "workers.php", {
           method: "POST",
@@ -1747,7 +1704,6 @@ function importFromJSON(file) {
         });
       }
 
-      // Insertar guardias
       for (const g of data.guards) {
         await fetch(API_URL + "guards.php", {
           method: "POST",
@@ -1762,7 +1718,6 @@ function importFromJSON(file) {
         });
       }
 
-      // Insertar días
       for (const d of data.guardDays || []) {
         await fetch(API_URL + "days.php", {
           method: "POST",
@@ -1783,6 +1738,188 @@ function importFromJSON(file) {
     }
   };
   reader.readAsText(file);
+}
+
+// ---------- USUARIOS (API) ----------
+async function loadUsers() {
+  try {
+    const res = await fetch(API_URL + "usuarios.php");
+    if (!res.ok) throw new Error("Error al cargar usuarios");
+    users = await res.json();
+    renderUsersList();
+    updateUserWorkerSelect();
+  } catch (e) {
+    console.error("Error cargando usuarios:", e);
+    users = [];
+    renderUsersList();
+  }
+}
+
+function renderUsersList() {
+  const container = document.getElementById("usersList");
+  if (!container) return;
+  if (users.length === 0) {
+    container.innerHTML = "<p>No hay usuarios registrados.</p>";
+    return;
+  }
+  container.innerHTML = "";
+  users.forEach((user) => {
+    const div = document.createElement("div");
+    div.className = "user-item";
+    const worker = user.worker_id ? workers.find((w) => w.id === user.worker_id) : null;
+    const workerName = worker ? worker.nombre : "Sin asociar";
+    div.innerHTML = `
+      <span><strong>${escapeHtml(user.username)}</strong> (${user.role}) - ${workerName}</span>
+      <div>
+        <button class="edit-user" data-id="${user.id}">✏️</button>
+        <button class="delete-user" data-id="${user.id}">🗑️</button>
+      </div>
+    `;
+    container.appendChild(div);
+  });
+
+  document.querySelectorAll(".edit-user").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const id = parseInt(btn.dataset.id);
+      const user = users.find((u) => u.id === id);
+      if (user) openEditUserModal(user);
+    });
+  });
+
+  document.querySelectorAll(".delete-user").forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      if (!isAdmin()) return alert("No tienes permisos.");
+      const id = parseInt(btn.dataset.id);
+      if (id === currentUser?.id) {
+        alert("No puedes eliminarte a ti mismo.");
+        return;
+      }
+      if (confirm("¿Eliminar este usuario?")) {
+        try {
+          await fetch(API_URL + `usuarios.php?id=${id}`, { method: "DELETE" });
+          await loadUsers();
+          alert("Usuario eliminado.");
+        } catch (e) {
+          alert("Error al eliminar usuario");
+          console.error(e);
+        }
+      }
+    });
+  });
+}
+
+function updateUserWorkerSelect() {
+  const select = document.getElementById("newUserWorker");
+  if (!select) return;
+  const currentVal = select.value;
+  select.innerHTML = '<option value="">Sin asociar</option>';
+  workers.forEach((w) => {
+    const opt = document.createElement("option");
+    opt.value = w.id;
+    opt.textContent = w.nombre;
+    select.appendChild(opt);
+  });
+  if (currentVal && workers.some((w) => w.id == currentVal)) {
+    select.value = currentVal;
+  }
+}
+
+async function addUser() {
+  if (!isAdmin()) return alert("No tienes permisos.");
+  const username = document.getElementById("newUsername").value.trim();
+  const password = document.getElementById("newPassword").value.trim();
+  const role = document.getElementById("newUserRole").value;
+  const workerId = document.getElementById("newUserWorker").value;
+  if (!username || !password) {
+    alert("Usuario y contraseña son obligatorios.");
+    return;
+  }
+  if (password.length < 4) {
+    alert("La contraseña debe tener al menos 4 caracteres.");
+    return;
+  }
+  const payload = {
+    username,
+    password,
+    role,
+    worker_id: workerId ? parseInt(workerId) : null,
+  };
+  try {
+    const res = await fetch(API_URL + "usuarios.php", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    const result = await res.json();
+    if (result.success) {
+      await loadUsers();
+      document.getElementById("newUsername").value = "";
+      document.getElementById("newPassword").value = "";
+      alert("Usuario añadido.");
+    } else {
+      alert("Error: " + (result.error || "desconocido"));
+    }
+  } catch (e) {
+    alert("Error al añadir usuario");
+    console.error(e);
+  }
+}
+
+function openEditUserModal(user) {
+  if (!isAdmin()) return alert("No tienes permisos.");
+  // Editar nombre de usuario
+  const newUsername = prompt("Nuevo nombre de usuario (dejar vacío para no cambiar):", user.username);
+  if (newUsername !== null && newUsername.trim() !== "" && newUsername.trim() !== user.username) {
+    if (users.some((u) => u.username === newUsername.trim() && u.id !== user.id)) {
+      alert("Ese nombre de usuario ya existe.");
+      return;
+    }
+    updateUserField(user.id, "username", newUsername.trim());
+  }
+  // Editar rol
+  const newRole = prompt("Nuevo rol (admin/worker, dejar vacío para no cambiar):", user.role);
+  if (newRole !== null && (newRole === "admin" || newRole === "worker") && newRole !== user.role) {
+    updateUserField(user.id, "role", newRole);
+  }
+  // Editar worker_id
+  const newWorkerId = prompt("Nuevo ID de trabajador (dejar vacío para no cambiar, 0 para quitar):", user.worker_id || "0");
+  if (newWorkerId !== null) {
+    const val = parseInt(newWorkerId);
+    if (!isNaN(val) && val !== user.worker_id) {
+      updateUserField(user.id, "worker_id", val || null);
+    }
+  }
+  // Editar contraseña
+  const newPassword = prompt("Nueva contraseña (dejar vacío para no cambiar):", "");
+  if (newPassword !== null && newPassword.trim() !== "") {
+    if (newPassword.trim().length < 4) {
+      alert("La contraseña debe tener al menos 4 caracteres.");
+      return;
+    }
+    updateUserField(user.id, "password", newPassword.trim());
+  }
+}
+
+async function updateUserField(id, field, value) {
+  try {
+    const payload = {};
+    payload[field] = value;
+    const res = await fetch(API_URL + `usuarios.php?id=${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    const result = await res.json();
+    if (result.success) {
+      await loadUsers();
+      alert("Usuario actualizado.");
+    } else {
+      alert("Error: " + (result.error || "desconocido"));
+    }
+  } catch (e) {
+    alert("Error al actualizar usuario");
+    console.error(e);
+  }
 }
 
 // ---------- VISTAS ----------
@@ -1994,13 +2131,10 @@ function updateFilterWorkerSelect() {
 function updateFilterYearSelect() {
   const select = document.getElementById("filterYear");
   if (!select) return;
-
-  // Si no hay guardias, mostrar solo "Todos los años"
   if (!guards || guards.length === 0) {
     select.innerHTML = '<option value="all">Todos los años</option>';
     return;
   }
-
   const years = [
     ...new Set(
       guards
@@ -2008,7 +2142,7 @@ function updateFilterYearSelect() {
           if (!g.fecha) return null;
           return parseInt(g.fecha.split("-")[0]);
         })
-        .filter((y) => y !== null),
+        .filter((y) => y !== null)
     ),
   ].sort((a, b) => a - b);
 
@@ -2029,17 +2163,14 @@ function updateFilterYearSelect() {
 function updateFilterCatedraSelect() {
   const select = document.getElementById("filterCatedra");
   if (!select) return;
-
-  // Si no hay guardias, mostrar solo "Todas las cátedras"
   if (!guards || guards.length === 0) {
     select.innerHTML = '<option value="all">Todas las cátedras</option>';
     return;
   }
-
   const currentVal = select.value;
   const valores = [
     ...new Set(
-      guards.map((g) => g.catedra).filter((c) => c && c.trim() !== ""),
+      guards.map((g) => g.catedra).filter((c) => c && c.trim() !== "")
     ),
   ].sort();
   select.innerHTML = '<option value="all">Todas las cátedras</option>';
@@ -2099,6 +2230,7 @@ function refreshUI() {
   updateFilterYearSelect();
   updateFilterCatedraSelect();
   updateReportYearFilter();
+  updateUserWorkerSelect();
   document.getElementById("yearSelect").value = currentYear;
   applyRoleBasedUI();
 }
@@ -2133,9 +2265,6 @@ function bindEvents() {
   document
     .getElementById("exportDataBtn")
     ?.addEventListener("click", downloadCurrentDataAsJson);
-  document
-    .getElementById("exportCsvBtn")
-    ?.addEventListener("click", exportToCSV);
   document
     .getElementById("importFileInput")
     ?.addEventListener("change", (e) => {
@@ -2313,59 +2442,36 @@ function bindEvents() {
         this.textContent = "🔽 Filtros";
       }
     });
-}
 
-// ---------- CARGA DE USUARIOS DESDE JSON EXTERNO ----------
-async function loadUsers() {
-  try {
-    const response = await fetch("users.json");
-    if (!response.ok) throw new Error("HTTP " + response.status);
-    USERS = await response.json();
-    console.log("✅ Usuarios cargados:", USERS.length);
-  } catch (error) {
-    console.error("❌ Error cargando users.json:", error);
-    USERS = [
-      {
-        id: 1,
-        username: "admin",
-        password: "admin",
-        role: "admin",
-        workerId: null,
-      },
-      {
-        id: 2,
-        username: "miguel",
-        password: "miguel",
-        role: "worker",
-        workerId: 1781469978315,
-      },
-    ];
-    alert("⚠️ No se pudo cargar users.json. Usando usuarios por defecto.");
-  }
+  // Usuarios
+  document.getElementById("addUserBtn")?.addEventListener("click", addUser);
+  document.getElementById("newUsername")?.addEventListener("keypress", (e) => {
+    if (e.key === "Enter") addUser();
+  });
+  document.getElementById("newPassword")?.addEventListener("keypress", (e) => {
+    if (e.key === "Enter") addUser();
+  });
 }
 
 // ---------- INICIO ----------
 async function init() {
-  await loadUsers();
-
   const hasSession = loadSession();
   if (hasSession) {
     document.getElementById("loginModal").style.display = "none";
     document.getElementById("appContent").style.display = "block";
     await loadData();
+    await loadUsers();
     refreshUI();
     setActiveView("Gestion");
     setView("table");
   } else {
     document.getElementById("loginModal").style.display = "flex";
     document.getElementById("appContent").style.display = "none";
-    // Cargar datos en segundo plano para login más rápido
     loadData();
   }
 
   bindEvents();
-  console.log("✅ Aplicación inicializada con API MySQL");
+  console.log("✅ Aplicación inicializada con API MySQL y gestión de usuarios");
 }
 
-// Ejecutar al cargar
 init();
