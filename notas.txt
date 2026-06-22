@@ -140,3 +140,13 @@ if0_42239270_XXX - MySQL Database Name
 sql102.infinityfree.com  - MySQL Hostname
 3306 - MySQL Port (optional)
 if0_42239270_sindicato_guardias   - MySQL Database Name Complete
+
+Username: ezyro_42239742 
+Password General: fafdafef545b
+Created On: 2026-06-21 16:57:55
+https://guardiasindicato.liveblog365.com/?i=1
+MySQL hostname: sql104.ezyro.com
+MySQL username: ezyro_42239742    
+  MySQL DB Name: ezyro_42239742_1
+MySQL User Name: ezyro_42239742
+MySQL Host Name: sql104.ezyro.com
