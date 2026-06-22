@@ -128,3 +128,15 @@ INSERT INTO guardias (id, fecha, worker_id, completada, catedra, notas) VALUES
 (20, '2026-06-25', 1781469978317, 0, 'MAT', ''),
 (21, '2026-06-29', 1781469978349, 0, 'FPT', ''),
 (24, '2026-06-30', 1781469978357, 0, 'COM', '');
+
+Despliegue en  InfinityFree
+if0_42239270 - user
+qxDWLdM56UKAUZ - password
+
+SQL
+if0_42239270 - MySQL Username
+qxDWLdM56UKAUZ - MySQL Password
+if0_42239270_XXX - MySQL Database Name
+sql102.infinityfree.com  - MySQL Hostname
+3306 - MySQL Port (optional)
+f0_42239270_sindicato_guardias  - MySQL Database Name Complete
