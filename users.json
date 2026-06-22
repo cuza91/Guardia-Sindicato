@@ -2,14 +2,14 @@
   {
     "id": 1,
     "username": "admin",
-    "password": "admin",
+    "password": "$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi",
     "role": "admin",
     "workerId": null
   },
   {
     "id": 2,
     "username": "miguel",
-    "password": "miguel",
+    "password": "$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi",
     "role": "worker",
     "workerId": 1781469978315
   }
