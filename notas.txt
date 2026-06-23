@@ -150,3 +150,8 @@ MySQL username: ezyro_42239742
   MySQL DB Name: ezyro_42239742_1
 MySQL User Name: ezyro_42239742
 MySQL Host Name: sql104.ezyro.com
+
+$host = 'ezyro_42239742'; 
+$dbname = 'ezyro_42239742_1';
+$username = 'ezyro_42239742';  
+$password = 'fafdafef545b';      
