@@ -1958,6 +1958,7 @@ async function updateUserField(id, field, value) {
 
 // ---------- MENSAJES ----------
 let currentMessageTab = "inbox"; // 'inbox' o 'sent'
+let selectedUsers = []; // para recordar selecciones en el masivo
 
 async function loadMessages() {
   const tbody = document.getElementById("messagesTableBody");
@@ -2070,8 +2071,10 @@ async function viewMessage(id) {
     }
     const msg = await res.json();
 
-    document.getElementById("messageModalTitle").textContent = `📩 ${msg.subject}`;
-    document.getElementById("messageModalBody").textContent = msg.message || "(Mensaje vacío)";
+    document.getElementById("messageModalTitle").textContent =
+      `📩 ${msg.subject}`;
+    document.getElementById("messageModalBody").textContent =
+      msg.message || "(Mensaje vacío)";
     document.getElementById("messageModal").style.display = "flex";
 
     if (msg.receiver_id === currentUser.id && !msg.is_read) {
@@ -2210,6 +2213,136 @@ function closeMessageModal() {
 
 function closeNewMessageModal() {
   document.getElementById("newMessageModal").style.display = "none";
+}
+
+// ---------- MENSAJES MASIVOS ----------
+async function openMassMessageModal() {
+  if (!isAdmin()) {
+    alert("Solo los administradores pueden enviar mensajes masivos.");
+    return;
+  }
+  const modal = document.getElementById("massMessageModal");
+  const container = document.getElementById("userCheckboxes");
+  container.innerHTML = "<p>Cargando usuarios...</p>";
+
+  try {
+    const res = await fetch(`${API_URL}usuarios.php`);
+    if (!res.ok) throw new Error("Error al cargar usuarios");
+    const users = await res.json();
+    const filtered = users.filter((u) => u.id !== currentUser.id);
+    if (filtered.length === 0) {
+      container.innerHTML = "<p>No hay otros usuarios disponibles.</p>";
+    } else {
+      container.innerHTML = "";
+      filtered.forEach((u) => {
+        const label = document.createElement("label");
+        label.className = "user-checkbox-item";
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.value = u.id;
+        checkbox.className = "user-checkbox";
+        checkbox.checked = selectedUsers.includes(u.id);
+        label.appendChild(checkbox);
+        label.appendChild(
+          document.createTextNode(` ${u.username} (${u.role})`),
+        );
+        container.appendChild(label);
+      });
+    }
+  } catch (e) {
+    console.error("Error cargando usuarios para masivo:", e);
+    container.innerHTML = "<p>Error al cargar usuarios.</p>";
+    return;
+  }
+
+  document.getElementById("massSubject").value = "";
+  document.getElementById("massContent").value = "";
+  modal.style.display = "flex";
+}
+
+async function sendMassMessage() {
+  const subject = document.getElementById("massSubject").value.trim();
+  const message = document.getElementById("massContent").value.trim();
+  const checkboxes = document.querySelectorAll(".user-checkbox:checked");
+  const receiverIds = Array.from(checkboxes).map((cb) => parseInt(cb.value));
+
+  if (!subject) {
+    alert("Escribe un asunto.");
+    return;
+  }
+  if (!message) {
+    alert("Escribe un mensaje.");
+    return;
+  }
+  if (receiverIds.length === 0) {
+    alert("Selecciona al menos un destinatario.");
+    return;
+  }
+
+  if (!confirm(`¿Enviar este mensaje a ${receiverIds.length} usuario(s)?`))
+    return;
+
+  try {
+    const res = await fetch(`${API_URL}mensajes.php`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        userId: currentUser.id,
+        receiver_id: receiverIds,
+        subject,
+        message,
+      }),
+    });
+    const data = await res.json();
+    if (data.success) {
+      alert(
+        `✅ Mensaje enviado a ${data.sent} de ${data.total} destinatarios.`,
+      );
+      document.getElementById("massMessageModal").style.display = "none";
+      if (document.getElementById("viewMensajes").style.display !== "none") {
+        loadMessages();
+      }
+    } else {
+      alert("❌ Error: " + (data.error || "desconocido"));
+    }
+  } catch (e) {
+    console.error("Error al enviar mensaje masivo:", e);
+    alert("No se pudo enviar el mensaje masivo.");
+  }
+}
+
+function closeMassMessageModal() {
+  document.getElementById("massMessageModal").style.display = "none";
+}
+
+function bindMassEvents() {
+  document
+    .getElementById("selectAllUsersBtn")
+    ?.addEventListener("click", () => {
+      document
+        .querySelectorAll(".user-checkbox")
+        .forEach((cb) => (cb.checked = true));
+    });
+  document
+    .getElementById("deselectAllUsersBtn")
+    ?.addEventListener("click", () => {
+      document
+        .querySelectorAll(".user-checkbox")
+        .forEach((cb) => (cb.checked = false));
+    });
+  document
+    .getElementById("sendMassMessageBtn")
+    ?.addEventListener("click", sendMassMessage);
+  document
+    .getElementById("cancelMassMessageBtn")
+    ?.addEventListener("click", closeMassMessageModal);
+  document
+    .querySelector(".close-massmessage")
+    ?.addEventListener("click", closeMassMessageModal);
+  window.addEventListener("click", (e) => {
+    if (e.target === document.getElementById("massMessageModal"))
+      closeMassMessageModal();
+  });
 }
 
 // ---------- VISTAS ----------
@@ -2510,6 +2643,10 @@ function applyRoleBasedUI() {
   } else if (filterWorker) {
     filterWorker.style.display = "";
   }
+  const massBtn = document.getElementById("massMessageBtn");
+  if (massBtn) {
+    massBtn.style.display = isAdminUser ? "" : "none";
+  }
 }
 
 function refreshUI() {
@@ -2793,6 +2930,12 @@ function bindEvents() {
   document
     .getElementById("closeMessageModalBtn")
     ?.addEventListener("click", closeMessageModal);
+
+  // Eventos de mensaje masivo
+  document
+    .getElementById("massMessageBtn")
+    ?.addEventListener("click", openMassMessageModal);
+  bindMassEvents();
 }
 
 // ---------- INICIO ----------

@@ -5,7 +5,7 @@ require_once 'db.php';
 $method = $_SERVER['REQUEST_METHOD'];
 $input = json_decode(file_get_contents('php://input'), true);
 
-// Obtener el usuario actual desde el frontend (se envía en cada petición)
+// Obtener el usuario actual desde el frontend
 $userId = null;
 if ($method === 'GET' && isset($_GET['userId'])) {
     $userId = (int) $_GET['userId'];
@@ -18,8 +18,8 @@ if ($method === 'GET' && isset($_GET['userId'])) {
 switch ($method) {
     case 'GET':
         $action = $_GET['action'] ?? 'inbox';
-        
-        // Obtener un mensaje específico por ID
+
+        // Obtener un mensaje específico por ID (para ver detalles)
         if ($action === 'get') {
             if (!isset($_GET['id'])) {
                 sendJsonResponse(['error' => 'ID de mensaje requerido'], 400);
@@ -37,16 +37,14 @@ switch ($method) {
             if (!$msg) {
                 sendJsonResponse(['error' => 'Mensaje no encontrado'], 404);
             }
-            // Verificar que el usuario actual sea parte del mensaje
             if ($msg['sender_id'] != $userId && $msg['receiver_id'] != $userId) {
                 sendJsonResponse(['error' => 'No tienes permiso para ver este mensaje'], 403);
             }
             sendJsonResponse($msg);
             break;
         }
-        
+
         if ($action === 'inbox') {
-            // Mensajes recibidos
             $stmt = $pdo->prepare("SELECT m.*, u.username as sender_name 
                                    FROM mensajes m
                                    JOIN usuarios u ON m.sender_id = u.id
@@ -56,7 +54,6 @@ switch ($method) {
             $messages = $stmt->fetchAll();
             sendJsonResponse($messages);
         } elseif ($action === 'sent') {
-            // Mensajes enviados
             $stmt = $pdo->prepare("SELECT m.*, u.username as receiver_name 
                                    FROM mensajes m
                                    JOIN usuarios u ON m.receiver_id = u.id
@@ -66,7 +63,6 @@ switch ($method) {
             $messages = $stmt->fetchAll();
             sendJsonResponse($messages);
         } elseif ($action === 'unread_count') {
-            // Contador de no leídos
             $stmt = $pdo->prepare("SELECT COUNT(*) as count FROM mensajes WHERE receiver_id = ? AND is_read = 0");
             $stmt->execute([$userId]);
             $count = $stmt->fetch()['count'];
@@ -77,31 +73,72 @@ switch ($method) {
         break;
 
     case 'POST':
-        // Enviar nuevo mensaje
-        if (!isset($input['receiver_id']) || !isset($input['subject']) || !isset($input['message'])) {
-            sendJsonResponse(['error' => 'Faltan datos: receiver_id, subject, message'], 400);
+        // Enviar nuevo mensaje (individual o masivo)
+        if (!isset($input['subject']) || !isset($input['message'])) {
+            sendJsonResponse(['error' => 'Faltan datos: subject, message'], 400);
         }
-        $receiverId = (int) $input['receiver_id'];
         $subject = trim($input['subject']);
         $message = trim($input['message']);
         if (empty($subject) || empty($message)) {
             sendJsonResponse(['error' => 'Asunto y mensaje no pueden estar vacíos'], 400);
         }
-        if ($receiverId === $userId) {
-            sendJsonResponse(['error' => 'No puedes enviarte un mensaje a ti mismo'], 400);
+
+        // Verificar si es envío masivo (array de receiver_ids)
+        $receivers = [];
+        if (isset($input['receiver_id']) && is_array($input['receiver_id'])) {
+            $receivers = array_map('intval', $input['receiver_id']);
+        } elseif (isset($input['receiver_id']) && is_numeric($input['receiver_id'])) {
+            $receivers = [(int) $input['receiver_id']];
+        } else {
+            sendJsonResponse(['error' => 'Destinatario(s) no válido(s)'], 400);
         }
-        $stmt = $pdo->prepare("INSERT INTO mensajes (sender_id, receiver_id, subject, message) VALUES (?, ?, ?, ?)");
-        $stmt->execute([$userId, $receiverId, $subject, $message]);
-        sendJsonResponse(['success' => true, 'id' => $pdo->lastInsertId()], 201);
+
+        if (empty($receivers)) {
+            sendJsonResponse(['error' => 'Debes seleccionar al menos un destinatario'], 400);
+        }
+
+        // Validar que los destinatarios existan y no sean el mismo usuario
+        $validReceivers = [];
+        $placeholders = implode(',', array_fill(0, count($receivers), '?'));
+        $stmt = $pdo->prepare("SELECT id FROM usuarios WHERE id IN ($placeholders)");
+        $stmt->execute($receivers);
+        $existing = $stmt->fetchAll(PDO::FETCH_COLUMN);
+        foreach ($receivers as $rid) {
+            if (in_array($rid, $existing) && $rid !== $userId) {
+                $validReceivers[] = $rid;
+            }
+        }
+
+        if (empty($validReceivers)) {
+            sendJsonResponse(['error' => 'No hay destinatarios válidos (o te intentaste enviar a ti mismo)'], 400);
+        }
+
+        // Insertar mensaje para cada destinatario
+        $inserted = 0;
+        $pdo->beginTransaction();
+        try {
+            $stmt = $pdo->prepare("INSERT INTO mensajes (sender_id, receiver_id, subject, message) VALUES (?, ?, ?, ?)");
+            foreach ($validReceivers as $rid) {
+                $stmt->execute([$userId, $rid, $subject, $message]);
+                $inserted++;
+            }
+            $pdo->commit();
+            sendJsonResponse([
+                'success' => true,
+                'sent' => $inserted,
+                'total' => count($validReceivers)
+            ], 201);
+        } catch (Exception $e) {
+            $pdo->rollBack();
+            sendJsonResponse(['error' => 'Error al enviar mensajes: ' . $e->getMessage()], 500);
+        }
         break;
 
     case 'PUT':
-        // Marcar como leído
         if (!isset($_GET['id'])) {
             sendJsonResponse(['error' => 'ID de mensaje requerido'], 400);
         }
         $msgId = (int) $_GET['id'];
-        // Verificar que el mensaje exista y que el usuario sea el destinatario
         $stmt = $pdo->prepare("SELECT receiver_id FROM mensajes WHERE id = ?");
         $stmt->execute([$msgId]);
         $msg = $stmt->fetch();
@@ -117,7 +154,6 @@ switch ($method) {
         break;
 
     case 'DELETE':
-        // Eliminar mensaje (solo si el usuario es remitente o destinatario)
         if (!isset($_GET['id'])) {
             sendJsonResponse(['error' => 'ID de mensaje requerido'], 400);
         }

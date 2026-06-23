@@ -1128,3 +1128,55 @@ small {
   background-color: var(--danger) !important;
   color: white !important;
 }
+
+/* ===== MODAL MENSAJE MASIVO ===== */
+#massMessageModal .modal-content {
+  max-width: 600px;
+}
+
+#massMessageModal .user-checkbox-item {
+  display: inline-flex;
+  align-items: center;
+  margin-right: 0.8rem;
+  margin-bottom: 0.3rem;
+  font-size: 0.9rem;
+  padding: 0.1rem 0.3rem;
+  border-radius: 0.25rem;
+  transition: background 0.15s;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+#massMessageModal .user-checkbox-item:hover {
+  background: var(--gray-200);
+}
+
+#massMessageModal .user-checkbox-item input[type="checkbox"] {
+  width: 1rem;
+  height: 1rem;
+  margin-right: 0.3rem;
+  accent-color: var(--primary);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+#userCheckboxes {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.2rem 0.6rem;
+  padding: 0.5rem;
+  border: 1px solid var(--gray-300);
+  border-radius: var(--border-radius);
+  background: white;
+  max-height: 200px;
+  overflow-y: auto;
+  min-height: 50px;
+}
+
+#userCheckboxes p {
+  width: 100%;
+  text-align: center;
+  color: var(--gray-600);
+  margin: 0.5rem 0;
+}
