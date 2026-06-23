@@ -26,10 +26,10 @@ let currentUser = null;
 // ---------- API BASE URL ----------
 const API_URL = "api/";
 
-// ---------- USUARIOS (desde API) ----------
+// ---------- USUARIOS ----------
 let users = [];
 
-// ---------- CLAVES LOCALSTORAGE (fallback) ----------
+// ---------- CLAVES LOCALSTORAGE ----------
 const STORAGE_WORKERS = "sindicato_workers";
 const STORAGE_GUARDS = "sindicato_guards";
 const STORAGE_YEAR = "sindicato_year";
@@ -192,7 +192,10 @@ async function loadInitialDataFromJson() {
     await loadData();
     return true;
   } catch (error) {
-    console.warn("No se pudo cargar base.json, usando datos existentes.", error);
+    console.warn(
+      "No se pudo cargar base.json, usando datos existentes.",
+      error,
+    );
     await loadData();
     return false;
   }
@@ -221,7 +224,7 @@ function downloadCurrentDataAsJson() {
   URL.revokeObjectURL(url);
 }
 
-// ---------- CARGAR DESDE ARCHIVO JSON (subida) ----------
+// ---------- CARGAR DESDE ARCHIVO JSON ----------
 function loadFromFile(file) {
   const reader = new FileReader();
   reader.onload = async (e) => {
@@ -280,10 +283,16 @@ function loadSession() {
   if (sessionStr) {
     try {
       const session = JSON.parse(sessionStr);
-      // Verificar contra API? Mejor confiar en el session guardado
-      currentUser = session;
+      currentUser = {
+        id: session.id,
+        username: session.username,
+        role: session.role,
+        workerId: session.workerId,
+      };
       return true;
-    } catch (e) {}
+    } catch (e) {
+      console.warn("Error al cargar sesión:", e);
+    }
   }
   return false;
 }
@@ -292,10 +301,11 @@ function saveSession(user) {
   localStorage.setItem(
     STORAGE_SESSION,
     JSON.stringify({
+      id: user.id,
       username: user.username,
       role: user.role,
       workerId: user.workerId,
-    })
+    }),
   );
 }
 
@@ -330,6 +340,7 @@ async function handleLogin() {
 
     if (result.success) {
       currentUser = {
+        id: result.user.id,
         username: result.user.username,
         role: result.user.role,
         workerId: result.user.workerId,
@@ -345,8 +356,11 @@ async function handleLogin() {
       refreshUI();
       setActiveView("Gestion");
       setView("table");
+      loadMessages();
+      updateUnreadCount();
     } else {
-      errorEl.textContent = "❌ " + (result.error || "Credenciales incorrectas.");
+      errorEl.textContent =
+        "❌ " + (result.error || "Credenciales incorrectas.");
       errorEl.style.display = "block";
     }
   } catch (e) {
@@ -366,7 +380,7 @@ function escapeHtml(str) {
   if (!str) return "";
   return str.replace(
     /[&<>]/g,
-    (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" })[m]
+    (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" })[m],
   );
 }
 
@@ -376,7 +390,7 @@ function formatDate(dateStr) {
   return `${d}/${m}/${y}`;
 }
 
-// ---------- TRABAJADORES CON API ----------
+// ---------- TRABAJADORES ----------
 async function renderWorkersList() {
   const container = document.getElementById("workersList");
   if (!container) return;
@@ -462,7 +476,7 @@ async function renderWorkersList() {
           workers = workers.filter((w) => w.id !== id);
           guards = guards.filter((g) => g.worker_id !== id);
           alert(
-            `Trabajador "${worker.nombre}" eliminado junto con sus ${guardCount} guardias.`
+            `Trabajador "${worker.nombre}" eliminado junto con sus ${guardCount} guardias.`,
           );
         } else if (opcion === "2") {
           await fetch(API_URL + `workers.php?id=${id}`, { method: "DELETE" });
@@ -478,7 +492,7 @@ async function renderWorkersList() {
             }
           }
           alert(
-            `Trabajador "${worker.nombre}" eliminado. Se conservaron ${guardCount} guardias.`
+            `Trabajador "${worker.nombre}" eliminado. Se conservaron ${guardCount} guardias.`,
           );
         } else if (opcion === "3") {
           if (workers.length === 1) {
@@ -491,7 +505,7 @@ async function renderWorkersList() {
             .join("\n");
           let newWorkerIndex = prompt(
             `Selecciona el trabajador que recibirá las ${guardCount} guardias:\n${workerListStr}`,
-            "1"
+            "1",
           );
           if (newWorkerIndex === null) return;
           newWorkerIndex = parseInt(newWorkerIndex) - 1;
@@ -519,7 +533,7 @@ async function renderWorkersList() {
           await saveData();
           refreshUI();
           alert(
-            `Trabajador "${worker.nombre}" eliminado. ${guardCount} guardias reasignadas a "${newWorker.nombre}".`
+            `Trabajador "${worker.nombre}" eliminado. ${guardCount} guardias reasignadas a "${newWorker.nombre}".`,
           );
           return;
         }
@@ -786,7 +800,7 @@ async function generateGuardsFromDays() {
 
   const sortedDays = [...guardDays].sort();
   const existingDates = new Set(
-    guards.filter((g) => guardDays.includes(g.fecha)).map((g) => g.fecha)
+    guards.filter((g) => guardDays.includes(g.fecha)).map((g) => g.fecha),
   );
   const newDays = sortedDays.filter((date) => !existingDates.has(date));
   if (!newDays.length)
@@ -881,7 +895,7 @@ function importDaysFromJSON(file) {
   reader.readAsText(file);
 }
 
-// ---------- GENERACIÓN AUTOMÁTICA MULTI-AÑO ----------
+// ---------- GENERACIÓN AUTOMÁTICA ----------
 function generateGuardsForYear(year) {
   if (!workers.length) return [];
   const newGuards = [];
@@ -949,7 +963,7 @@ async function regenerateGuards() {
     await saveData();
     refreshUI();
     alert(
-      `Guardias generadas para ${year}. Total laborables: ${newGuards.length}.`
+      `Guardias generadas para ${year}. Total laborables: ${newGuards.length}.`,
     );
   } catch (e) {
     alert("Error al regenerar guardias");
@@ -957,7 +971,7 @@ async function regenerateGuards() {
   }
 }
 
-// ---------- GUARDIAS MANUALES CON BÚSQUEDA ----------
+// ---------- GUARDIAS MANUALES ----------
 function openManualModal() {
   if (!isAdmin()) return alert("No tienes permisos.");
   if (!workers.length) return alert("Primero añade trabajadores.");
@@ -977,7 +991,7 @@ function renderWorkerSelectForManual(filterText = "") {
   const workerSelect = document.getElementById("manualWorker");
   if (!workerSelect) return;
   const filtered = workers.filter((w) =>
-    w.nombre.toLowerCase().includes(filterText.toLowerCase())
+    w.nombre.toLowerCase().includes(filterText.toLowerCase()),
   );
   workerSelect.innerHTML = '<option value="">— Sin asignar —</option>';
   if (!filtered.length) {
@@ -1049,11 +1063,11 @@ function bindManualSearchEvent() {
   const searchInput = document.getElementById("searchWorkerInput");
   if (searchInput)
     searchInput.addEventListener("input", (e) =>
-      renderWorkerSelectForManual(e.target.value)
+      renderWorkerSelectForManual(e.target.value),
     );
 }
 
-// ---------- ORDENAMIENTO DE TABLA ----------
+// ---------- ORDENAMIENTO ----------
 function sortGuards(guardsArray) {
   const sorted = [...guardsArray];
   sorted.sort((a, b) => {
@@ -1116,15 +1130,15 @@ function applyFiltersAndRenderTable() {
 
   if (filterDay !== "all")
     filtered = filtered.filter(
-      (g) => parseInt(g.fecha.split("-")[2]) === parseInt(filterDay)
+      (g) => parseInt(g.fecha.split("-")[2]) === parseInt(filterDay),
     );
   if (filterMonth !== "all")
     filtered = filtered.filter(
-      (g) => parseInt(g.fecha.split("-")[1]) === parseInt(filterMonth)
+      (g) => parseInt(g.fecha.split("-")[1]) === parseInt(filterMonth),
     );
   if (filterYear !== "all")
     filtered = filtered.filter(
-      (g) => parseInt(g.fecha.split("-")[0]) === parseInt(filterYear)
+      (g) => parseInt(g.fecha.split("-")[0]) === parseInt(filterYear),
     );
   if (filterWorker === "none")
     filtered = filtered.filter((g) => g.worker_id == null);
@@ -1173,8 +1187,8 @@ function renderGuardsTablePage() {
     const workerName = worker
       ? worker.nombre
       : guard.worker_id
-      ? "❌ Eliminado"
-      : "Sin asignar";
+        ? "❌ Eliminado"
+        : "Sin asignar";
     const row = tbody.insertRow();
 
     const td1 = row.insertCell(0);
@@ -1411,7 +1425,7 @@ function renderCalendar() {
   const daysInMonth = new Date(
     currentCalendarYear,
     currentCalendarMonth + 1,
-    0
+    0,
   ).getDate();
   const monthNames = [
     "Enero",
@@ -1432,7 +1446,7 @@ function renderCalendar() {
   let grid = "";
   const weekdays = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
   weekdays.forEach(
-    (d) => (grid += `<div class="calendar-day-header">${d}</div>`)
+    (d) => (grid += `<div class="calendar-day-header">${d}</div>`),
   );
   for (let i = 0; i < startWeekDay; i++)
     grid += `<div class="calendar-day-cell calendar-empty"></div>`;
@@ -1453,8 +1467,8 @@ function renderCalendar() {
         const name = worker
           ? worker.nombre
           : g.worker_id
-          ? "❌"
-          : "Sin asignar";
+            ? "❌"
+            : "Sin asignar";
         const completedClass = g.completada ? "completed" : "";
         grid += `<div class="calendar-day-guard ${completedClass}" style="margin:0; padding:0 0.1rem; background:${g.completada ? "var(--success-light)" : "var(--primary-light)"};">${escapeHtml(name)} ${g.completada ? "✅" : "⏳"}</div>`;
       });
@@ -1475,7 +1489,7 @@ function renderCalendar() {
         openEditModal(guardsOfDay[0]);
       } else {
         alert(
-          `No hay guardias para ${formatDate(date)}. Puedes añadirla manualmente.`
+          `No hay guardias para ${formatDate(date)}. Puedes añadirla manualmente.`,
         );
       }
     });
@@ -1512,7 +1526,7 @@ function updateReportYearFilter() {
           if (!g.fecha) return null;
           return parseInt(g.fecha.split("-")[0]);
         })
-        .filter((y) => y !== null)
+        .filter((y) => y !== null),
     ),
   ].sort((a, b) => a - b);
   const currentVal = select.value;
@@ -1536,12 +1550,12 @@ function getFilteredGuardsForReport() {
   const month = document.getElementById("reportMonth")?.value || "all";
   if (year !== "all") {
     filtered = filtered.filter(
-      (g) => parseInt(g.fecha.split("-")[0]) === parseInt(year)
+      (g) => parseInt(g.fecha.split("-")[0]) === parseInt(year),
     );
   }
   if (month !== "all") {
     filtered = filtered.filter(
-      (g) => parseInt(g.fecha.split("-")[1]) === parseInt(month)
+      (g) => parseInt(g.fecha.split("-")[1]) === parseInt(month),
     );
   }
   return filtered;
@@ -1575,7 +1589,7 @@ function renderSummary() {
   let filteredWorkers = [...workers];
   if (filterValue === "noGuards") {
     filteredWorkers = workers.filter(
-      (w) => !filteredGuards.some((g) => g.worker_id === w.id)
+      (w) => !filteredGuards.some((g) => g.worker_id === w.id),
     );
   } else if (filterValue === "noCompleted") {
     filteredWorkers = workers.filter((w) => {
@@ -1597,7 +1611,7 @@ function renderSummary() {
     let workersToShow = filteredWorkers;
     if (filterValue === "all") {
       workersToShow = workers.filter((w) =>
-        filteredGuards.some((g) => g.worker_id === w.id)
+        filteredGuards.some((g) => g.worker_id === w.id),
       );
       if (workersToShow.length === 0) {
         html += `<p style="grid-column:1/-1; text-align:center; color:var(--gray-600);">Ningún trabajador tiene guardias en el período seleccionado.</p>`;
@@ -1640,7 +1654,7 @@ function renderSummary() {
     catedraHtml = "<p>No hay cátedras definidas en las guardias.</p>";
   } else {
     const sorted = Array.from(catedraMap.entries()).sort(
-      (a, b) => b[1].total - a[1].total
+      (a, b) => b[1].total - a[1].total,
     );
     for (const [catedra, stats] of sorted) {
       const percent = stats.total
@@ -1661,7 +1675,7 @@ function exportToJSON() {
   if (!isAdmin()) return alert("No tienes permisos.");
   let fileName = prompt(
     "Nombre del archivo:",
-    `guardias_sindicato_${currentYear}`
+    `guardias_sindicato_${currentYear}`,
   );
   if (!fileName) return;
   if (!fileName.endsWith(".json")) fileName += ".json";
@@ -1740,7 +1754,7 @@ function importFromJSON(file) {
   reader.readAsText(file);
 }
 
-// ---------- USUARIOS (API) ----------
+// ---------- USUARIOS ----------
 async function loadUsers() {
   try {
     const res = await fetch(API_URL + "usuarios.php");
@@ -1766,7 +1780,9 @@ function renderUsersList() {
   users.forEach((user) => {
     const div = document.createElement("div");
     div.className = "user-item";
-    const worker = user.worker_id ? workers.find((w) => w.id === user.worker_id) : null;
+    const worker = user.worker_id
+      ? workers.find((w) => w.id === user.worker_id)
+      : null;
     const workerName = worker ? worker.nombre : "Sin asociar";
     div.innerHTML = `
       <span><strong>${escapeHtml(user.username)}</strong> (${user.role}) - ${workerName}</span>
@@ -1867,30 +1883,48 @@ async function addUser() {
 
 function openEditUserModal(user) {
   if (!isAdmin()) return alert("No tienes permisos.");
-  // Editar nombre de usuario
-  const newUsername = prompt("Nuevo nombre de usuario (dejar vacío para no cambiar):", user.username);
-  if (newUsername !== null && newUsername.trim() !== "" && newUsername.trim() !== user.username) {
-    if (users.some((u) => u.username === newUsername.trim() && u.id !== user.id)) {
+  const newUsername = prompt(
+    "Nuevo nombre de usuario (dejar vacío para no cambiar):",
+    user.username,
+  );
+  if (
+    newUsername !== null &&
+    newUsername.trim() !== "" &&
+    newUsername.trim() !== user.username
+  ) {
+    if (
+      users.some((u) => u.username === newUsername.trim() && u.id !== user.id)
+    ) {
       alert("Ese nombre de usuario ya existe.");
       return;
     }
     updateUserField(user.id, "username", newUsername.trim());
   }
-  // Editar rol
-  const newRole = prompt("Nuevo rol (admin/worker, dejar vacío para no cambiar):", user.role);
-  if (newRole !== null && (newRole === "admin" || newRole === "worker") && newRole !== user.role) {
+  const newRole = prompt(
+    "Nuevo rol (admin/worker, dejar vacío para no cambiar):",
+    user.role,
+  );
+  if (
+    newRole !== null &&
+    (newRole === "admin" || newRole === "worker") &&
+    newRole !== user.role
+  ) {
     updateUserField(user.id, "role", newRole);
   }
-  // Editar worker_id
-  const newWorkerId = prompt("Nuevo ID de trabajador (dejar vacío para no cambiar, 0 para quitar):", user.worker_id || "0");
+  const newWorkerId = prompt(
+    "Nuevo ID de trabajador (dejar vacío para no cambiar, 0 para quitar):",
+    user.worker_id || "0",
+  );
   if (newWorkerId !== null) {
     const val = parseInt(newWorkerId);
     if (!isNaN(val) && val !== user.worker_id) {
       updateUserField(user.id, "worker_id", val || null);
     }
   }
-  // Editar contraseña
-  const newPassword = prompt("Nueva contraseña (dejar vacío para no cambiar):", "");
+  const newPassword = prompt(
+    "Nueva contraseña (dejar vacío para no cambiar):",
+    "",
+  );
   if (newPassword !== null && newPassword.trim() !== "") {
     if (newPassword.trim().length < 4) {
       alert("La contraseña debe tener al menos 4 caracteres.");
@@ -1920,6 +1954,264 @@ async function updateUserField(id, field, value) {
     alert("Error al actualizar usuario");
     console.error(e);
   }
+}
+
+// ---------- MENSAJES ----------
+let currentMessageTab = "inbox"; // 'inbox' o 'sent'
+
+async function loadMessages() {
+  const tbody = document.getElementById("messagesTableBody");
+  if (!tbody) return;
+  tbody.innerHTML = '<tr><td colspan="5">Cargando...</td></tr>';
+
+  if (!currentUser || !currentUser.id) {
+    tbody.innerHTML = '<tr><td colspan="5">Usuario no autenticado.</td></tr>';
+    return;
+  }
+
+  try {
+    const url = `${API_URL}mensajes.php?action=${currentMessageTab}&userId=${currentUser.id}`;
+    console.log("📨 Cargando mensajes desde:", url);
+
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const messages = await res.json();
+    console.log("📨 Mensajes recibidos:", messages);
+
+    if (!messages || !messages.length) {
+      tbody.innerHTML = '<tr><td colspan="5">No hay mensajes.</td></tr>';
+      updateUnreadCount();
+      return;
+    }
+
+    tbody.innerHTML = "";
+    messages.forEach((msg) => {
+      const tr = document.createElement("tr");
+      const isInbox = currentMessageTab === "inbox";
+      const otherUser = isInbox
+        ? msg.sender_name || "Desconocido"
+        : msg.receiver_name || "Desconocido";
+      const otherUserId = isInbox ? msg.sender_id : msg.receiver_id;
+
+      tr.innerHTML = `
+        <td data-label="${isInbox ? "De" : "Para"}">${escapeHtml(otherUser)}</td>
+        <td data-label="Asunto">${escapeHtml(msg.subject)}</td>
+        <td data-label="Fecha">${formatDate(msg.created_at.split("T")[0])} ${msg.created_at.split("T")[1]?.slice(0, 5) || ""}</td>
+        <td data-label="Leído">${msg.is_read ? "✅" : "❌"}</td>
+        <td data-label="Acciones">
+          <button class="btn-edit view-msg" data-id="${msg.id}" title="Ver">👁️</button>
+          ${!msg.is_read && isInbox ? `<button class="btn-edit mark-read" data-id="${msg.id}" title="Marcar como leído">📨</button>` : ""}
+          <button class="btn-edit delete-msg" data-id="${msg.id}" title="Eliminar" style="background:#f8d7da;color:#721c24;">🗑️</button>
+          <button class="btn-edit reply-msg" data-id="${msg.id}" data-receiver="${otherUserId}" data-subject="${msg.subject}" title="Responder">↩️</button>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+    tbody.querySelectorAll(".view-msg").forEach((btn) => {
+      btn.addEventListener("click", () =>
+        viewMessage(parseInt(btn.dataset.id)),
+      );
+    });
+    tbody.querySelectorAll(".mark-read").forEach((btn) => {
+      btn.addEventListener("click", () => markAsRead(parseInt(btn.dataset.id)));
+    });
+    tbody.querySelectorAll(".delete-msg").forEach((btn) => {
+      btn.addEventListener("click", () =>
+        deleteMessage(parseInt(btn.dataset.id)),
+      );
+    });
+    tbody.querySelectorAll(".reply-msg").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const receiverId = parseInt(btn.dataset.receiver);
+        const subject = btn.dataset.subject.startsWith("Re: ")
+          ? btn.dataset.subject
+          : "Re: " + btn.dataset.subject;
+        openNewMessageModal(receiverId, subject);
+      });
+    });
+
+    updateUnreadCount();
+  } catch (e) {
+    console.error("❌ Error cargando mensajes:", e);
+    tbody.innerHTML =
+      '<tr><td colspan="5">Error al cargar mensajes. Intenta de nuevo.</td></tr>';
+  }
+}
+
+async function updateUnreadCount() {
+  if (!currentUser || !currentUser.id) return;
+  try {
+    const res = await fetch(
+      `${API_URL}mensajes.php?action=unread_count&userId=${currentUser.id}`,
+    );
+    if (!res.ok) throw new Error("Error al obtener contador");
+    const data = await res.json();
+    const badge = document.getElementById("unreadBadge");
+    if (data.count > 0) {
+      badge.textContent = data.count;
+      badge.style.display = "inline";
+    } else {
+      badge.style.display = "none";
+    }
+  } catch (e) {
+    console.warn("No se pudo obtener el contador de no leídos:", e);
+  }
+}
+
+async function viewMessage(id) {
+  try {
+    const res = await fetch(
+      `${API_URL}mensajes.php?action=inbox&userId=${currentUser.id}`,
+    );
+    if (!res.ok) throw new Error("Error al obtener mensaje");
+    const messages = await res.json();
+    const msg = messages.find((m) => m.id === id);
+    if (!msg) {
+      alert("Mensaje no encontrado");
+      return;
+    }
+    document.getElementById("messageModalTitle").textContent =
+      `📩 ${msg.subject}`;
+    document.getElementById("messageModalBody").textContent =
+      msg.message || "(Mensaje vacío)";
+    document.getElementById("messageModal").style.display = "flex";
+
+    if (msg.receiver_id === currentUser.id && !msg.is_read) {
+      await markAsRead(id);
+    }
+
+    const replyBtn = document.getElementById("replyMessageBtn");
+    replyBtn.onclick = () => {
+      document.getElementById("messageModal").style.display = "none";
+      openNewMessageModal(msg.sender_id, `Re: ${msg.subject}`);
+    };
+  } catch (e) {
+    console.error("Error al ver mensaje:", e);
+    alert("No se pudo cargar el mensaje.");
+  }
+}
+
+async function markAsRead(id) {
+  try {
+    const res = await fetch(
+      `${API_URL}mensajes.php?id=${id}&userId=${currentUser.id}`,
+      {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: currentUser.id }),
+      },
+    );
+    if (!res.ok) throw new Error();
+    await loadMessages();
+    updateUnreadCount();
+  } catch (e) {
+    console.error("Error al marcar como leído:", e);
+    alert("No se pudo marcar como leído.");
+  }
+}
+
+async function deleteMessage(id) {
+  if (!confirm("¿Eliminar este mensaje?")) return;
+  try {
+    const res = await fetch(
+      `${API_URL}mensajes.php?id=${id}&userId=${currentUser.id}`,
+      {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: currentUser.id }),
+      },
+    );
+    if (!res.ok) throw new Error();
+    await loadMessages();
+    updateUnreadCount();
+  } catch (e) {
+    console.error("Error al eliminar mensaje:", e);
+    alert("No se pudo eliminar el mensaje.");
+  }
+}
+
+async function openNewMessageModal(receiverId = null, subject = "") {
+  const modal = document.getElementById("newMessageModal");
+  const select = document.getElementById("messageReceiver");
+  try {
+    const res = await fetch(`${API_URL}usuarios.php`);
+    if (!res.ok) throw new Error("Error al obtener usuarios");
+    const users = await res.json();
+    select.innerHTML = '<option value="">Selecciona un usuario...</option>';
+    const filtered = users.filter((u) => u.id !== currentUser.id);
+    if (filtered.length === 0) {
+      select.innerHTML = '<option value="">No hay otros usuarios disponibles</option>';
+    } else {
+      filtered.forEach((u) => {
+        const opt = document.createElement("option");
+        opt.value = u.id;
+        opt.textContent = u.username;
+        select.appendChild(opt);
+      });
+      if (receiverId) {
+        select.value = receiverId;
+      }
+    }
+  } catch (e) {
+    console.error("Error cargando usuarios:", e);
+    alert("No se pudo cargar la lista de usuarios.");
+    return;
+  }
+  document.getElementById("messageSubject").value = subject || "";
+  document.getElementById("messageContent").value = "";
+  modal.style.display = "flex";
+}
+
+async function sendNewMessage() {
+  const receiverId = parseInt(document.getElementById("messageReceiver").value);
+  const subject = document.getElementById("messageSubject").value.trim();
+  const message = document.getElementById("messageContent").value.trim();
+
+  if (!receiverId) {
+    alert("Selecciona un destinatario.");
+    return;
+  }
+  if (!subject) {
+    alert("Escribe un asunto.");
+    return;
+  }
+  if (!message) {
+    alert("Escribe un mensaje.");
+    return;
+  }
+
+  try {
+    const res = await fetch(`${API_URL}mensajes.php`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        userId: currentUser.id,
+        receiver_id: receiverId,
+        subject,
+        message,
+      }),
+    });
+    const data = await res.json();
+    if (data.success) {
+      alert("Mensaje enviado correctamente.");
+      document.getElementById("newMessageModal").style.display = "none";
+      loadMessages();
+    } else {
+      alert("Error: " + (data.error || "desconocido"));
+    }
+  } catch (e) {
+    console.error("Error al enviar mensaje:", e);
+    alert("No se pudo enviar el mensaje.");
+  }
+}
+
+function closeMessageModal() {
+  document.getElementById("messageModal").style.display = "none";
+}
+
+function closeNewMessageModal() {
+  document.getElementById("newMessageModal").style.display = "none";
 }
 
 // ---------- VISTAS ----------
@@ -1954,19 +2246,22 @@ function setView(view) {
   }
 }
 
-// ---------- NAVEGACIÓN ENTRE VISTAS ----------
 function setActiveView(view) {
   document.getElementById("viewGestion").style.display = "none";
   document.getElementById("viewReportes").style.display = "none";
+  document.getElementById("viewMensajes").style.display = "none";
   document.getElementById("viewConfig").style.display = "none";
 
   const activeView = document.getElementById(`view${view}`);
-  activeView.style.display = "block";
+  if (activeView) {
+    activeView.style.display = "block";
+    activeView.classList.add("active-view");
+  }
 
   document
     .querySelectorAll(".view-section")
     .forEach((el) => el.classList.remove("active-view"));
-  activeView.classList.add("active-view");
+  if (activeView) activeView.classList.add("active-view");
 
   const navBtns = document.querySelectorAll(".main-nav .btn");
   navBtns.forEach((btn) => btn.classList.remove("active", "primary"));
@@ -1991,6 +2286,9 @@ function setActiveView(view) {
       document.getElementById("calendarViewSection").style.display = "block";
       renderCalendar();
     }
+  }
+  if (view === "Mensajes") {
+    loadMessages();
   }
 }
 
@@ -2062,7 +2360,6 @@ function getPeriodInfo(view) {
   return "";
 }
 
-// ---------- EXPORTAR A PDF ----------
 function exportToPdf() {
   const activeView = document.querySelector(".view-section.active-view");
   if (!activeView) return;
@@ -2081,7 +2378,7 @@ function exportToPdf() {
   }, 100);
 }
 
-// ---------- LIMPIEZA Y EJEMPLO ----------
+// ---------- LIMPIEZA ----------
 async function clearAllData() {
   if (!isAdmin()) return alert("No tienes permisos.");
   if (confirm("⚠️ Eliminará TODOS los datos. ¿Continuar?")) {
@@ -2142,7 +2439,7 @@ function updateFilterYearSelect() {
           if (!g.fecha) return null;
           return parseInt(g.fecha.split("-")[0]);
         })
-        .filter((y) => y !== null)
+        .filter((y) => y !== null),
     ),
   ].sort((a, b) => a - b);
 
@@ -2170,7 +2467,7 @@ function updateFilterCatedraSelect() {
   const currentVal = select.value;
   const valores = [
     ...new Set(
-      guards.map((g) => g.catedra).filter((c) => c && c.trim() !== "")
+      guards.map((g) => g.catedra).filter((c) => c && c.trim() !== ""),
     ),
   ].sort();
   select.innerHTML = '<option value="all">Todas las cátedras</option>';
@@ -2187,7 +2484,6 @@ function updateFilterCatedraSelect() {
   }
 }
 
-// ----- ROLES -----
 function isAdmin() {
   return currentUser && currentUser.role === "admin";
 }
@@ -2367,6 +2663,10 @@ function bindEvents() {
     if (e.target === document.getElementById("manualModal")) closeManualModal();
     if (e.target === document.getElementById("editDayModal")) closeDayModal();
     if (e.target === document.getElementById("noteModal")) closeNoteModal();
+    if (e.target === document.getElementById("messageModal"))
+      closeMessageModal();
+    if (e.target === document.getElementById("newMessageModal"))
+      closeNewMessageModal();
   });
   document.getElementById("workerName")?.addEventListener("keypress", (e) => {
     if (e.key === "Enter") addWorker();
@@ -2385,6 +2685,9 @@ function bindEvents() {
   document
     .getElementById("navReportes")
     ?.addEventListener("click", () => setActiveView("Reportes"));
+  document
+    .getElementById("navMensajes")
+    ?.addEventListener("click", () => setActiveView("Mensajes"));
   document
     .getElementById("navConfig")
     ?.addEventListener("click", () => setActiveView("Config"));
@@ -2443,7 +2746,6 @@ function bindEvents() {
       }
     });
 
-  // Usuarios
   document.getElementById("addUserBtn")?.addEventListener("click", addUser);
   document.getElementById("newUsername")?.addEventListener("keypress", (e) => {
     if (e.key === "Enter") addUser();
@@ -2451,6 +2753,48 @@ function bindEvents() {
   document.getElementById("newPassword")?.addEventListener("keypress", (e) => {
     if (e.key === "Enter") addUser();
   });
+
+  // Eventos de mensajes
+  document
+    .getElementById("inboxTabBtn")
+    ?.addEventListener("click", function () {
+      this.classList.add("active", "primary");
+      this.classList.remove("outline");
+      document
+        .getElementById("sentTabBtn")
+        .classList.remove("active", "primary");
+      document.getElementById("sentTabBtn").classList.add("outline");
+      currentMessageTab = "inbox";
+      loadMessages();
+    });
+  document.getElementById("sentTabBtn")?.addEventListener("click", function () {
+    this.classList.add("active", "primary");
+    this.classList.remove("outline");
+    document
+      .getElementById("inboxTabBtn")
+      .classList.remove("active", "primary");
+    document.getElementById("inboxTabBtn").classList.add("outline");
+    currentMessageTab = "sent";
+    loadMessages();
+  });
+  document
+    .getElementById("newMessageBtn")
+    ?.addEventListener("click", () => openNewMessageModal());
+  document
+    .getElementById("sendMessageBtn")
+    ?.addEventListener("click", sendNewMessage);
+  document
+    .getElementById("cancelMessageBtn")
+    ?.addEventListener("click", closeNewMessageModal);
+  document
+    .querySelector(".close-newmessage")
+    ?.addEventListener("click", closeNewMessageModal);
+  document
+    .querySelector(".close-message")
+    ?.addEventListener("click", closeMessageModal);
+  document
+    .getElementById("closeMessageModalBtn")
+    ?.addEventListener("click", closeMessageModal);
 }
 
 // ---------- INICIO ----------
@@ -2464,6 +2808,8 @@ async function init() {
     refreshUI();
     setActiveView("Gestion");
     setView("table");
+    loadMessages();
+    updateUnreadCount();
   } else {
     document.getElementById("loginModal").style.display = "flex";
     document.getElementById("appContent").style.display = "none";
@@ -2471,7 +2817,9 @@ async function init() {
   }
 
   bindEvents();
-  console.log("✅ Aplicación inicializada con API MySQL y gestión de usuarios");
+  console.log(
+    "✅ Aplicación inicializada con API MySQL, gestión de usuarios y mensajería",
+  );
 }
 
 init();

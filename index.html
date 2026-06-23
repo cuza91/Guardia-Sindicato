@@ -71,10 +71,11 @@
           </div>
         </header>
 
-        <!-- MENÚ DE NAVEGACIÓN (ocultar Config para workers) -->
+        <!-- MENÚ DE NAVEGACIÓN -->
         <nav class="main-nav" id="mainNav">
           <button id="navGestion" class="btn primary active">📋 Gestión</button>
           <button id="navReportes" class="btn outline">📊 Reportes</button>
+          <button id="navMensajes" class="btn outline">💬 Mensajes</button>
           <button id="navConfig" class="btn outline" style="display: none">
             ⚙️ Configuración
           </button>
@@ -104,7 +105,7 @@
               "
             ></div>
 
-            <!-- Filtros (solo tabla) -->
+            <!-- Filtros -->
             <div id="filtersSection" class="filters-bar">
               <div class="filter-toggle">
                 <button id="toggleFiltersBtn" class="btn outline small">
@@ -221,7 +222,7 @@
               </p>
             </div>
 
-            <!-- Botón añadir manual (solo admin) -->
+            <!-- Botón añadir manual -->
             <div
               class="form-row"
               style="margin-top: 1rem"
@@ -319,9 +320,66 @@
           </section>
         </div>
 
+        <!-- ========== VISTA MENSAJES ========== -->
+        <div id="viewMensajes" class="view-section" style="display: none">
+          <section class="card">
+            <h2>
+              💬 Mensajes
+              <span
+                id="unreadBadge"
+                class="badge"
+                style="
+                  display: none;
+                  background: #dc3545;
+                  color: white;
+                  padding: 0.1rem 0.6rem;
+                  border-radius: 2rem;
+                  font-size: 0.8rem;
+                  margin-left: 0.5rem;
+                "
+                >0</span
+              >
+              <button
+                id="newMessageBtn"
+                class="btn primary small"
+                style="margin-left: auto"
+              >
+                ✉️ Nuevo
+              </button>
+            </h2>
+            <div class="filters-bar" style="margin-bottom: 1rem">
+              <div class="form-row">
+                <button id="inboxTabBtn" class="btn primary small active">
+                  📥 Recibidos
+                </button>
+                <button id="sentTabBtn" class="btn outline small">
+                  📤 Enviados
+                </button>
+              </div>
+            </div>
+            <div id="messagesContainer" class="table-wrapper">
+              <table id="messagesTable">
+                <thead>
+                  <tr>
+                    <th>De / Para</th>
+                    <th>Asunto</th>
+                    <th>Fecha</th>
+                    <th>Leído</th>
+                    <th>Acciones</th>
+                  </tr>
+                </thead>
+                <tbody id="messagesTableBody">
+                  <tr>
+                    <td colspan="5">Cargando mensajes...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+        </div>
+
         <!-- ========== VISTA CONFIGURACIÓN ========== -->
         <div id="viewConfig" class="view-section" style="display: none">
-          <!-- CARD 1: CONFIGURACIÓN -->
           <section class="card config-card">
             <h2>⚙️ Gestionar Datos</h2>
             <div class="config-grid">
@@ -443,7 +501,6 @@
             </div>
           </section>
 
-          <!-- CARD 2: ACCIONES -->
           <section class="card actions-card">
             <h2>⚡ Generar Guardias</h2>
             <div class="actions-grid">
@@ -497,7 +554,7 @@
       </div>
     </div>
 
-    <!-- MODALES -->
+    <!-- MODALES DE EDICIÓN (existentes) -->
     <div id="editModal" class="modal" style="display: none">
       <div class="modal-content">
         <span class="close">&times;</span>
@@ -597,7 +654,6 @@
       </div>
     </div>
 
-    <!-- Modal para ver nota -->
     <div id="noteModal" class="modal" style="display: none">
       <div class="modal-content">
         <span class="close-note">&times;</span>
@@ -612,6 +668,69 @@
         ></p>
         <div class="form-actions">
           <button id="closeNoteBtn" class="btn outline">Cerrar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODALES DE MENSAJES -->
+    <div id="messageModal" class="modal" style="display: none">
+      <div class="modal-content" style="max-width: 600px">
+        <span class="close-message">&times;</span>
+        <h3 id="messageModalTitle">Mensaje</h3>
+        <div
+          id="messageModalBody"
+          style="
+            white-space: pre-wrap;
+            word-break: break-word;
+            margin: 1rem 0;
+            padding: 0.5rem;
+            background: var(--gray-100);
+            border-radius: var(--border-radius);
+          "
+        ></div>
+        <div class="form-actions">
+          <button id="replyMessageBtn" class="btn primary">↩️ Responder</button>
+          <button id="closeMessageModalBtn" class="btn outline">Cerrar</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="newMessageModal" class="modal" style="display: none">
+      <div class="modal-content" style="max-width: 500px">
+        <span class="close-newmessage">&times;</span>
+        <h3>✉️ Nuevo Mensaje</h3>
+        <div class="form-group">
+          <label>👤 Para:</label>
+          <select id="messageReceiver" required>
+            <option value="">Selecciona un usuario...</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>📌 Asunto:</label>
+          <input
+            type="text"
+            id="messageSubject"
+            placeholder="Asunto del mensaje"
+            required
+          />
+        </div>
+        <div class="form-group">
+          <label>📝 Mensaje:</label>
+          <textarea
+            id="messageContent"
+            rows="5"
+            style="
+              width: 100%;
+              padding: 0.5rem;
+              border-radius: var(--border-radius);
+              border: 1px solid var(--gray-400);
+            "
+            placeholder="Escribe tu mensaje aquí..."
+          ></textarea>
+        </div>
+        <div class="form-actions">
+          <button id="sendMessageBtn" class="btn success">📨 Enviar</button>
+          <button id="cancelMessageBtn" class="btn outline">Cancelar</button>
         </div>
       </div>
     </div>
