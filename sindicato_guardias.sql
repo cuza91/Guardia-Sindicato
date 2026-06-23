@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 21-06-2026 a las 10:37:13
+-- Tiempo de generación: 23-06-2026 a las 03:10:09
 -- Versión del servidor: 10.4.32-MariaDB
 -- Versión de PHP: 8.2.12
 
@@ -82,7 +82,7 @@ INSERT INTO `guardias` (`id`, `fecha`, `worker_id`, `completada`, `catedra`, `no
 (15, '2026-06-15', 1781469978319, 1, 'MAT', '', '2026-06-21 07:16:25', '2026-06-21 07:16:25'),
 (16, '2026-06-16', 1781469978315, 1, 'COM', '', '2026-06-21 07:16:25', '2026-06-21 07:16:25'),
 (17, '2026-06-18', 1781469978348, 1, 'FPT', '', '2026-06-21 07:16:25', '2026-06-21 07:16:25'),
-(18, '2026-06-22', 1781698703183, 0, 'Idiomas', 'Verificar Nombre', '2026-06-21 07:16:25', '2026-06-21 07:16:25'),
+(18, '2026-06-22', 1781698703183, 1, 'Idiomas', 'Verificar Nombre', '2026-06-21 07:16:25', '2026-06-22 22:14:05'),
 (19, '2026-06-24', 1781698865579, 0, 'FQ', '', '2026-06-21 07:16:25', '2026-06-21 07:16:25'),
 (20, '2026-06-25', 1781469978317, 0, 'MAT', '', '2026-06-21 07:16:25', '2026-06-21 07:16:25'),
 (21, '2026-06-29', 1781469978349, 0, 'FPT', '', '2026-06-21 07:16:25', '2026-06-21 07:16:25'),
@@ -179,10 +179,10 @@ CREATE TABLE `usuarios` (
 --
 
 INSERT INTO `usuarios` (`id`, `username`, `password`, `role`, `worker_id`, `created_at`) VALUES
-(1, 'admin', 'admin', 'admin', NULL, '2026-06-21 07:16:24'),
-(2, 'miguel', 'miguel', 'worker', 1781469978315, '2026-06-21 07:16:24'),
-(3, 'yiya', 'yiya', 'worker', 1781469978352, '2026-06-21 08:33:19'),
-(4, 'yami', 'yami', 'worker', 1781469978354, '2026-06-21 08:35:32');
+(6, 'admin', '$2y$10$mqTGoFSqtBtADHeKAvk5ee4JKJI8ZmRIjEOx8DmdweQP8qsCu10ZS', 'admin', NULL, '2026-06-22 22:28:13'),
+(7, 'miguel', '$2y$10$H.p4kaf6YrAqAyXxI.xDle7.XfylGkwGdNtTodLLi.kwhVemR0FoK', 'worker', 1781469978315, '2026-06-22 22:28:13'),
+(8, 'yiya', '$2y$10$50/Unb5ABegTYAnwbKRHIOlngef97fyPAFIBleD4mqH19ho4C/Ohm', 'worker', 1781469978352, '2026-06-22 22:28:13'),
+(9, 'yami', '$2y$10$XjfoR3AdBM6z.hnjM58ymOKGho9f1DwCwN22iUHwnLJYYEw4u7JHm', 'worker', 1781469978354, '2026-06-22 22:28:13');
 
 --
 -- Índices para tablas volcadas
@@ -242,7 +242,7 @@ ALTER TABLE `guardias`
 -- AUTO_INCREMENT de la tabla `usuarios`
 --
 ALTER TABLE `usuarios`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
 
 --
 -- Restricciones para tablas volcadas
