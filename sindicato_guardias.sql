@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 23-06-2026 a las 03:10:09
+-- Tiempo de generación: 23-06-2026 a las 03:38:35
 -- Versión del servidor: 10.4.32-MariaDB
 -- Versión de PHP: 8.2.12
 
@@ -88,6 +88,22 @@ INSERT INTO `guardias` (`id`, `fecha`, `worker_id`, `completada`, `catedra`, `no
 (21, '2026-06-29', 1781469978349, 0, 'FPT', '', '2026-06-21 07:16:25', '2026-06-21 07:16:25'),
 (22, '2026-01-03', 1781469978315, 1, 'COM', 'Guardia de 24 horas', '2026-06-21 07:16:25', '2026-06-21 07:16:25'),
 (24, '2026-06-30', 1781469978357, 0, 'COM', '', '2026-06-21 07:16:25', '2026-06-21 08:07:22');
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `mensajes`
+--
+
+CREATE TABLE `mensajes` (
+  `id` int(11) NOT NULL,
+  `sender_id` int(11) NOT NULL,
+  `receiver_id` int(11) NOT NULL,
+  `subject` varchar(255) NOT NULL,
+  `message` text NOT NULL,
+  `is_read` tinyint(1) DEFAULT 0,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -210,6 +226,14 @@ ALTER TABLE `guardias`
   ADD KEY `idx_worker` (`worker_id`);
 
 --
+-- Indices de la tabla `mensajes`
+--
+ALTER TABLE `mensajes`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_sender` (`sender_id`),
+  ADD KEY `idx_receiver` (`receiver_id`);
+
+--
 -- Indices de la tabla `trabajadores`
 --
 ALTER TABLE `trabajadores`
@@ -239,6 +263,12 @@ ALTER TABLE `guardias`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=25;
 
 --
+-- AUTO_INCREMENT de la tabla `mensajes`
+--
+ALTER TABLE `mensajes`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT de la tabla `usuarios`
 --
 ALTER TABLE `usuarios`
@@ -253,6 +283,13 @@ ALTER TABLE `usuarios`
 --
 ALTER TABLE `guardias`
   ADD CONSTRAINT `guardias_ibfk_1` FOREIGN KEY (`worker_id`) REFERENCES `trabajadores` (`id`) ON DELETE SET NULL;
+
+--
+-- Filtros para la tabla `mensajes`
+--
+ALTER TABLE `mensajes`
+  ADD CONSTRAINT `mensajes_ibfk_1` FOREIGN KEY (`sender_id`) REFERENCES `usuarios` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `mensajes_ibfk_2` FOREIGN KEY (`receiver_id`) REFERENCES `usuarios` (`id`) ON DELETE CASCADE;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
