@@ -1,135 +1,5 @@
--- Crear la base de datos
-CREATE DATABASE IF NOT EXISTS sindicato_guardias;
-USE sindicato_guardias;
-
--- Tabla de usuarios
-CREATE TABLE IF NOT EXISTS usuarios (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    username VARCHAR(50) UNIQUE NOT NULL,
-    password VARCHAR(255) NOT NULL,
-    role ENUM('admin', 'worker') NOT NULL DEFAULT 'worker',
-    worker_id BIGINT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
--- Tabla de trabajadores
-CREATE TABLE IF NOT EXISTS trabajadores (
-    id BIGINT PRIMARY KEY,
-    nombre VARCHAR(255) NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
--- Tabla de guardias
-CREATE TABLE IF NOT EXISTS guardias (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    fecha DATE NOT NULL,
-    worker_id BIGINT NULL,
-    completada BOOLEAN DEFAULT FALSE,
-    catedra VARCHAR(100) DEFAULT '',
-    notas TEXT DEFAULT '',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    INDEX idx_fecha (fecha),
-    INDEX idx_worker (worker_id),
-    FOREIGN KEY (worker_id) REFERENCES trabajadores(id) ON DELETE SET NULL
-);
-
--- Tabla de días de guardia (días definidos para generar guardias)
-CREATE TABLE IF NOT EXISTS dias_guardia (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    fecha DATE UNIQUE NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
--- Tabla de configuración
-CREATE TABLE IF NOT EXISTS configuracion (
-    clave VARCHAR(50) PRIMARY KEY,
-    valor VARCHAR(255) NOT NULL,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-);
-
--- Insertar configuración inicial
-INSERT INTO configuracion (clave, valor) VALUES 
-('current_year', '2026'),
-('last_worker_index', '0');
-
--- Insertar usuarios por defecto
-INSERT INTO usuarios (username, password, role, worker_id) VALUES 
-('admin', 'admin', 'admin', NULL),
-('miguel', 'miguel', 'worker', 1781469978315);
-
--- Insertar trabajadores iniciales (los de tu base.json)
-INSERT INTO trabajadores (id, nombre) VALUES
-(1781469978315, 'Miguel Noa Cuza'),
-(1781469978316, 'René Mustelier Cuevas'),
-(1781469978317, 'Kenia Pérez Téllez'),
-(1781469978318, 'Bertha Libertad Emasabe Fuentes'),
-(1781469978319, 'María Caridad Pérez Martinó'),
-(1781469978320, 'Milaidys Pérez Vedey'),
-(1781469978322, 'Arael Padró Caldentey'),
-(1781469978323, 'Sandy Sánchez Domínguez'),
-(1781469978324, 'Raizi Chaveco Clavel'),
-(1781469978325, 'Magalis Rengifo Guillot'),
-(1781469978326, 'Rafael Pozo Pozo'),
-(1781469978327, 'Yarisleidys Martínez Faure'),
-(1781469978328, 'Yexi Fernández Chacón'),
-(1781469978329, 'Rolando Palacios Ramírez'),
-(1781469978330, 'Yusleidi Sojo Drago'),
-(1781469978331, 'Marisel Acebo López'),
-(1781469978332, 'Ricardo Boza Rizo'),
-(1781469978333, 'Rosa Delia López Rico'),
-(1781469978334, 'Yanet Medina Frómeta'),
-(1781469978335, 'Vilma Ferrer Bardet'),
-(1781469978336, 'Tamara Ferrer Bardet'),
-(1781469978337, 'Giannia Benítez Alayo'),
-(1781469978338, 'Migdalia Temó Despaigne'),
-(1781469978339, 'Milagros Valiente García'),
-(1781469978340, 'Solineidys Montoya Badell'),
-(1781469978341, 'Lién Maine Casadesús'),
-(1781469978342, 'Ariana Veránez Quiala'),
-(1781469978343, 'Rodolfo Hernández Álvarez'),
-(1781469978344, 'Arnaldo Sanabria León'),
-(1781469978345, 'Ángel M. Freyre Fonceca'),
-(1781469978346, 'Daniel Garzón Ruiz'),
-(1781469978347, 'Roberto López Castro'),
-(1781469978348, 'Juan Carlos Barrientos Barrientos'),
-(1781469978349, 'Ignacio Valiente Duharte'),
-(1781469978350, 'Arturo Vinent Rivera'),
-(1781469978351, 'Idarmis Romero Sánchez'),
-(1781469978352, 'Yimelsis García Pérez'),
-(1781469978353, 'Ana Libia Ferrer Quezada'),
-(1781469978354, 'Yamirka Balanzó Coca'),
-(1781469978355, 'Melba Vivian Vázquez Hardy'),
-(1781469978356, 'Dayamí Acosta Hernández'),
-(1781469978357, 'Jorge Arian Montero Isaac'),
-(1781469978358, 'Juaquín Campos R.'),
-(1781469978359, 'Félix González Isaguirre'),
-(1781469978360, 'Lucía Arada Corría'),
-(1781469978361, 'José Correa Noriega'),
-(1781469978362, 'Esperanza Sánchez Luna'),
-(1781469978363, 'María C. Stevent Rosillo'),
-(1781469978364, 'Roberto Verdecia García'),
-(1781469978365, 'Jorge Luis Olivares Casas'),
-(1781698703183, 'Dorli Montoya'),
-(1781698865579, 'Yania Verdecia Acosta');
-
--- Insertar guardias iniciales (de tu base.json)
-INSERT INTO guardias (id, fecha, worker_id, completada, catedra, notas) VALUES
-(22, '2026-01-03', 1781469978315, 1, 'COM', 'Guardia de 24 horas'),
-(11, '2026-06-02', 1781469978334, 1, 'Idiomas', ''),
-(12, '2026-06-04', 1781469978351, 1, 'FPT', ''),
-(13, '2026-06-09', 1781469978328, 1, 'FQ', ''),
-(14, '2026-06-11', 1781469978338, 1, 'Idiomas', ''),
-(15, '2026-06-15', 1781469978319, 1, 'MAT', ''),
-(16, '2026-06-16', 1781469978315, 1, 'COM', ''),
-(17, '2026-06-18', 1781469978348, 1, 'FPT', ''),
-(18, '2026-06-22', 1781698703183, 0, 'Idiomas', 'Verificar Nombre'),
-(19, '2026-06-24', 1781698865579, 0, 'FQ', ''),
-(20, '2026-06-25', 1781469978317, 0, 'MAT', ''),
-(21, '2026-06-29', 1781469978349, 0, 'FPT', ''),
-(24, '2026-06-30', 1781469978357, 0, 'COM', '');
-
 Despliegue en  InfinityFree
+
 if0_42239270 - user
 qxDWLdM56UKAUZ - password
 
@@ -140,6 +10,10 @@ if0_42239270_XXX - MySQL Database Name
 sql102.infinityfree.com  - MySQL Hostname
 3306 - MySQL Port (optional)
 if0_42239270_sindicato_guardias   - MySQL Database Name Complete
+
+
+
+Despliegue en ProFreeHost
 
 Username: ezyro_42239742 
 Password General: fafdafef545b
