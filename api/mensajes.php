@@ -6,7 +6,6 @@ $method = $_SERVER['REQUEST_METHOD'];
 $input = json_decode(file_get_contents('php://input'), true);
 
 // Obtener el usuario actual desde el frontend (se envía en cada petición)
-// En este ejemplo se espera que el frontend envíe 'userId' en el body o en GET
 $userId = null;
 if ($method === 'GET' && isset($_GET['userId'])) {
     $userId = (int) $_GET['userId'];
@@ -19,6 +18,33 @@ if ($method === 'GET' && isset($_GET['userId'])) {
 switch ($method) {
     case 'GET':
         $action = $_GET['action'] ?? 'inbox';
+        
+        // Obtener un mensaje específico por ID
+        if ($action === 'get') {
+            if (!isset($_GET['id'])) {
+                sendJsonResponse(['error' => 'ID de mensaje requerido'], 400);
+            }
+            $msgId = (int) $_GET['id'];
+            $stmt = $pdo->prepare("SELECT m.*, 
+                                   u1.username as sender_name, 
+                                   u2.username as receiver_name
+                                   FROM mensajes m
+                                   JOIN usuarios u1 ON m.sender_id = u1.id
+                                   JOIN usuarios u2 ON m.receiver_id = u2.id
+                                   WHERE m.id = ?");
+            $stmt->execute([$msgId]);
+            $msg = $stmt->fetch();
+            if (!$msg) {
+                sendJsonResponse(['error' => 'Mensaje no encontrado'], 404);
+            }
+            // Verificar que el usuario actual sea parte del mensaje
+            if ($msg['sender_id'] != $userId && $msg['receiver_id'] != $userId) {
+                sendJsonResponse(['error' => 'No tienes permiso para ver este mensaje'], 403);
+            }
+            sendJsonResponse($msg);
+            break;
+        }
+        
         if ($action === 'inbox') {
             // Mensajes recibidos
             $stmt = $pdo->prepare("SELECT m.*, u.username as sender_name 

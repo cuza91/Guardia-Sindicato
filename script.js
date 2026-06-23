@@ -2061,20 +2061,17 @@ async function updateUnreadCount() {
 
 async function viewMessage(id) {
   try {
-    const res = await fetch(
-      `${API_URL}mensajes.php?action=inbox&userId=${currentUser.id}`,
-    );
-    if (!res.ok) throw new Error("Error al obtener mensaje");
-    const messages = await res.json();
-    const msg = messages.find((m) => m.id === id);
-    if (!msg) {
-      alert("Mensaje no encontrado");
+    const url = `${API_URL}mensajes.php?action=get&id=${id}&userId=${currentUser.id}`;
+    const res = await fetch(url);
+    if (!res.ok) {
+      const errorData = await res.json();
+      alert(errorData.error || "No se pudo cargar el mensaje.");
       return;
     }
-    document.getElementById("messageModalTitle").textContent =
-      `📩 ${msg.subject}`;
-    document.getElementById("messageModalBody").textContent =
-      msg.message || "(Mensaje vacío)";
+    const msg = await res.json();
+
+    document.getElementById("messageModalTitle").textContent = `📩 ${msg.subject}`;
+    document.getElementById("messageModalBody").textContent = msg.message || "(Mensaje vacío)";
     document.getElementById("messageModal").style.display = "flex";
 
     if (msg.receiver_id === currentUser.id && !msg.is_read) {
@@ -2141,7 +2138,8 @@ async function openNewMessageModal(receiverId = null, subject = "") {
     select.innerHTML = '<option value="">Selecciona un usuario...</option>';
     const filtered = users.filter((u) => u.id !== currentUser.id);
     if (filtered.length === 0) {
-      select.innerHTML = '<option value="">No hay otros usuarios disponibles</option>';
+      select.innerHTML =
+        '<option value="">No hay otros usuarios disponibles</option>';
     } else {
       filtered.forEach((u) => {
         const opt = document.createElement("option");
