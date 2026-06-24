@@ -4,7 +4,7 @@ https://myproyect.free.nf/
 
 SQL
 $host = 'sql113.infinityfree.com'; 
-$dbname = 'if0_42239506_XXX';
+$dbname = 'if0_42239506_sindicato_guardias';
 $username = 'if0_42239506';  
 $password = 'iVfsx8XMRD8';
 
