@@ -286,7 +286,7 @@
       "id": 19,
       "date": "2026-06-24",
       "workerId": 1781698865579,
-      "completed": false,
+      "completed": true,
       "catedra": "FQ",
       "notes": ""
     },
@@ -294,7 +294,7 @@
       "id": 20,
       "date": "2026-06-25",
       "workerId": 1781469978317,
-      "completed": false,
+      "completed": true,
       "catedra": "MAT",
       "notes": ""
     },
@@ -318,5 +318,5 @@
   "guardDays": [],
   "currentYear": 2026,
   "lastWorkerIndexForDays": 0,
-  "exportDate": "2026-06-23T02:51:47.022Z"
+  "exportDate": "2026-06-24T13:17:55.075Z"
 }
