@@ -905,6 +905,46 @@ td:nth-child(5) {
   }
 }
 
+/* ===== MEJORAS PARA MÓVILES EN GESTIÓN DE USUARIOS ===== */
+@media (max-width: 599px) {
+  /* Apilar verticalmente los campos del formulario de usuarios */
+  .config-block .form-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .config-block .form-row input,
+  .config-block .form-row select,
+  .config-block .form-row button {
+    width: 100%;
+    min-height: 48px; /* Mayor área táctil */
+    font-size: 1rem;
+  }
+
+  .config-block .form-row button {
+    margin-top: 0.25rem;
+  }
+
+  /* Ajustar la lista de usuarios para que ocupe bien el ancho */
+  .users-list .user-item {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    padding: 0.75rem 0.5rem;
+  }
+
+  .users-list .user-item > span {
+    flex: 1 1 100%;
+    text-align: center;
+  }
+
+  .users-list .user-item > div {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    width: 100%;
+  }
+}
+
 /* ----- TABLA RESPONSIVE (mobile) ----- */
 @media (max-width: 599px) {
   #guardsTable thead {
