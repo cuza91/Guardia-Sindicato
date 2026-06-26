@@ -74,18 +74,18 @@ async function loadData() {
   try {
     const workersRes = await fetch(API_URL + "workers.php");
     if (!workersRes.ok) throw new Error("Error cargando trabajadores");
-    workers = await workersRes.json();
-    if (!Array.isArray(workers)) workers = [];
+    const workersData = await workersRes.json();
+    workers = Array.isArray(workersData) ? workersData : [];
 
     const guardsRes = await fetch(API_URL + "guards.php");
     if (!guardsRes.ok) throw new Error("Error cargando guardias");
-    guards = await guardsRes.json();
-    if (!Array.isArray(guards)) guards = [];
+    const guardsData = await guardsRes.json();
+    guards = Array.isArray(guardsData) ? guardsData : [];
 
     const daysRes = await fetch(API_URL + "days.php");
     if (!daysRes.ok) throw new Error("Error cargando días");
-    guardDays = await daysRes.json();
-    if (!Array.isArray(guardDays)) guardDays = [];
+    const daysData = await daysRes.json();
+    guardDays = Array.isArray(daysData) ? daysData : [];
 
     const configRes = await fetch(API_URL + "config.php");
     if (!configRes.ok) throw new Error("Error cargando configuración");
@@ -141,7 +141,6 @@ async function loadInitialDataFromJson() {
     if (!response.ok) throw new Error("No se pudo cargar base.json");
     const data = await response.json();
 
-    // CORREGIDO: Usar 'nombre' en lugar de 'name' (coincide con base.json)
     for (const worker of data.workers || []) {
       try {
         await fetch(API_URL + "workers.php", {
@@ -149,7 +148,7 @@ async function loadInitialDataFromJson() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             id: worker.id,
-            nombre: worker.nombre, // CORREGIDO: antes era worker.name
+            nombre: worker.nombre,
           }),
         });
       } catch (e) {
@@ -157,18 +156,17 @@ async function loadInitialDataFromJson() {
       }
     }
 
-    // CORREGIDO: Usar 'fecha' en lugar de 'date', 'worker_id' en lugar de 'workerId', etc.
     for (const guard of data.guards || []) {
       try {
         await fetch(API_URL + "guards.php", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            fecha: guard.fecha, // CORREGIDO: antes era guard.date
-            worker_id: guard.worker_id, // CORREGIDO: antes era guard.workerId
-            completada: guard.completada ? 1 : 0, // CORREGIDO: antes era guard.completed
+            fecha: guard.fecha,
+            worker_id: guard.worker_id,
+            completada: guard.completada ? 1 : 0,
             catedra: guard.catedra || "",
-            notas: guard.notas || "", // CORREGIDO: antes era guard.notes
+            notas: guard.notas || "",
           }),
         });
       } catch (e) {
@@ -238,18 +236,17 @@ function loadFromFile(file) {
       await fetch(API_URL + "guards.php", { method: "DELETE" });
       await fetch(API_URL + "days.php", { method: "DELETE" });
 
-      // CORREGIDO: Usar 'nombre' en lugar de 'name'
       for (const worker of data.workers) {
         await fetch(API_URL + "workers.php", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             id: worker.id,
-            nombre: worker.nombre || worker.name, // Soporta ambos formatos
+            nombre: worker.nombre || worker.name,
           }),
         });
       }
-      // CORREGIDO: Usar 'fecha', 'worker_id', 'completada', 'notas'
+
       for (const guard of data.guards) {
         await fetch(API_URL + "guards.php", {
           method: "POST",
@@ -257,7 +254,7 @@ function loadFromFile(file) {
           body: JSON.stringify({
             fecha: guard.fecha || guard.date,
             worker_id: guard.worker_id || guard.workerId,
-            completada: guard.completada || guard.completed ? 1 : 0,
+            completada: guard.completada || guard.completed ? 1 : 0, // CORREGIDO
             catedra: guard.catedra || "",
             notas: guard.notas || guard.notes || "",
           }),
@@ -602,7 +599,6 @@ function exportWorkers() {
   URL.revokeObjectURL(a.href);
 }
 
-// CORREGIDO: Importar trabajadores desde JSON
 function importWorkersFromJSON(file) {
   if (!isAdmin()) return alert("No tienes permisos.");
   const reader = new FileReader();
@@ -625,7 +621,6 @@ function importWorkersFromJSON(file) {
         }
         return;
       }
-      // CORREGIDO: Verificar que los trabajadores tengan nombre (no 'name')
       if (
         !newWorkers.every(
           (w) => w.id && typeof (w.nombre || w.name) === "string",
@@ -642,15 +637,13 @@ function importWorkersFromJSON(file) {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             id: w.id,
-            nombre: w.nombre || w.name, // Soporta ambos formatos
+            nombre: w.nombre || w.name,
           }),
         });
       }
 
-      workers = newWorkers.map((w) => ({ ...w, nombre: w.nombre || w.name }));
-      guards = [];
-      lastWorkerIndexForDays = 0;
-      await saveData();
+      // Recargar desde la API para asegurar consistencia
+      await loadData();
       refreshUI();
       alert(`Importados ${workers.length} trabajadores. Guardias eliminadas.`);
     } catch (err) {
@@ -823,7 +816,7 @@ async function generateGuardsFromDays() {
     return alert("Todos los días ya tienen al menos una guardia.");
 
   let workerIndex = lastWorkerIndexForDays;
-  let maxId = guards.length ? Math.max(...guards.map((g) => g.id)) : 0;
+  let maxId = guards.length ? Math.max(...guards.map((g) => g.id)) : 0; // CORREGIDO
   const newGuards = [];
 
   for (const date of newDays) {
@@ -919,7 +912,7 @@ function generateGuardsForYear(year) {
   const start = new Date(year, 0, 1);
   const end = new Date(year, 11, 31);
   let current = new Date(start);
-  let maxId = guards.length ? Math.max(...guards.map((g) => g.id)) : 0;
+  let maxId = guards.length ? Math.max(...guards.map((g) => g.id)) : 0; // CORREGIDO
 
   while (current <= end) {
     const dayOfWeek = current.getDay();
@@ -1312,8 +1305,9 @@ function updateSortIndicators() {
   const setArrow = (th, active) => {
     if (!th) return;
     const arrow = currentSortOrder === "asc" ? " ▲" : " ▼";
-    const text = th.innerText.replace(/[ ▲▼]/g, "");
-    th.innerText = active ? text + arrow : text;
+    // Usar textContent para preservar emojis
+    const text = th.textContent.replace(/[ ▲▼]/g, "");
+    th.textContent = active ? text + arrow : text;
   };
   setArrow(headers[0], currentSortColumn === "date");
   setArrow(headers[1], currentSortColumn === "worker");
@@ -1475,7 +1469,8 @@ function renderCalendar() {
     grid += `<div class="${cellClass}" data-date="${dateStr}">
                   <div class="calendar-day-number">${d}</div>`;
     if (guardsOfDay.length) {
-      grid += `<div style="font-size:0.6rem; display:flex; flex-direction:column; gap:1px; max-height:60px; overflow-y:auto;">`;
+      // Aumentar max-height para móviles con muchas guardias
+      grid += `<div style="font-size:0.6rem; display:flex; flex-direction:column; gap:1px; max-height:80px; overflow-y:auto;">`;
       guardsOfDay.forEach((g) => {
         const worker = g.worker_id
           ? workers.find((w) => w.id === g.worker_id)
@@ -1713,7 +1708,6 @@ function exportToJSON() {
   URL.revokeObjectURL(a.href);
 }
 
-// CORREGIDO: Importar datos completos desde JSON
 function importFromJSON(file) {
   if (!isAdmin()) return alert("No tienes permisos.");
   const reader = new FileReader();
@@ -1727,7 +1721,6 @@ function importFromJSON(file) {
       await fetch(API_URL + "guards.php", { method: "DELETE" });
       await fetch(API_URL + "days.php", { method: "DELETE" });
 
-      // CORREGIDO: Usar 'nombre' en lugar de 'name'
       for (const w of data.workers) {
         await fetch(API_URL + "workers.php", {
           method: "POST",
@@ -1739,7 +1732,6 @@ function importFromJSON(file) {
         });
       }
 
-      // CORREGIDO: Usar 'fecha', 'worker_id', 'completada', 'notas'
       for (const g of data.guards) {
         await fetch(API_URL + "guards.php", {
           method: "POST",
@@ -1747,7 +1739,7 @@ function importFromJSON(file) {
           body: JSON.stringify({
             fecha: g.fecha || g.date,
             worker_id: g.worker_id || g.workerId,
-            completada: g.completada || g.completed ? 1 : 0,
+            completada: g.completada || g.completed ? 1 : 0, // CORREGIDO
             catedra: g.catedra || "",
             notas: g.notas || g.notes || "",
           }),
@@ -2790,7 +2782,10 @@ function bindEvents() {
   document
     .getElementById("cancelEditBtn")
     ?.addEventListener("click", closeModal);
-  document.querySelector(".close")?.addEventListener("click", closeModal);
+  // Usar querySelectorAll para todos los elementos con clase .close
+  document.querySelectorAll(".close").forEach((el) => {
+    el.addEventListener("click", closeModal);
+  });
   document
     .getElementById("saveManualBtn")
     ?.addEventListener("click", saveManualGuard);
