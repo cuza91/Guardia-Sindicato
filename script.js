@@ -141,6 +141,7 @@ async function loadInitialDataFromJson() {
     if (!response.ok) throw new Error("No se pudo cargar base.json");
     const data = await response.json();
 
+    // CORREGIDO: Usar 'nombre' en lugar de 'name' (coincide con base.json)
     for (const worker of data.workers || []) {
       try {
         await fetch(API_URL + "workers.php", {
@@ -148,29 +149,30 @@ async function loadInitialDataFromJson() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             id: worker.id,
-            nombre: worker.name,
+            nombre: worker.nombre, // CORREGIDO: antes era worker.name
           }),
         });
       } catch (e) {
-        console.warn("Error insertando trabajador:", worker.name, e);
+        console.warn("Error insertando trabajador:", worker.nombre, e);
       }
     }
 
+    // CORREGIDO: Usar 'fecha' en lugar de 'date', 'worker_id' en lugar de 'workerId', etc.
     for (const guard of data.guards || []) {
       try {
         await fetch(API_URL + "guards.php", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            fecha: guard.date,
-            worker_id: guard.workerId,
-            completada: guard.completed ? 1 : 0,
+            fecha: guard.fecha, // CORREGIDO: antes era guard.date
+            worker_id: guard.worker_id, // CORREGIDO: antes era guard.workerId
+            completada: guard.completada ? 1 : 0, // CORREGIDO: antes era guard.completed
             catedra: guard.catedra || "",
-            notas: guard.notes || "",
+            notas: guard.notas || "", // CORREGIDO: antes era guard.notes
           }),
         });
       } catch (e) {
-        console.warn("Error insertando guardia:", guard.date, e);
+        console.warn("Error insertando guardia:", guard.fecha, e);
       }
     }
 
@@ -236,23 +238,28 @@ function loadFromFile(file) {
       await fetch(API_URL + "guards.php", { method: "DELETE" });
       await fetch(API_URL + "days.php", { method: "DELETE" });
 
+      // CORREGIDO: Usar 'nombre' en lugar de 'name'
       for (const worker of data.workers) {
         await fetch(API_URL + "workers.php", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ id: worker.id, nombre: worker.name }),
+          body: JSON.stringify({
+            id: worker.id,
+            nombre: worker.nombre || worker.name, // Soporta ambos formatos
+          }),
         });
       }
+      // CORREGIDO: Usar 'fecha', 'worker_id', 'completada', 'notas'
       for (const guard of data.guards) {
         await fetch(API_URL + "guards.php", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            fecha: guard.date,
-            worker_id: guard.workerId,
-            completada: guard.completed ? 1 : 0,
+            fecha: guard.fecha || guard.date,
+            worker_id: guard.worker_id || guard.workerId,
+            completada: guard.completada || guard.completed ? 1 : 0,
             catedra: guard.catedra || "",
-            notas: guard.notes || "",
+            notas: guard.notas || guard.notes || "",
           }),
         });
       }
@@ -595,6 +602,7 @@ function exportWorkers() {
   URL.revokeObjectURL(a.href);
 }
 
+// CORREGIDO: Importar trabajadores desde JSON
 function importWorkersFromJSON(file) {
   if (!isAdmin()) return alert("No tienes permisos.");
   const reader = new FileReader();
@@ -617,7 +625,12 @@ function importWorkersFromJSON(file) {
         }
         return;
       }
-      if (!newWorkers.every((w) => w.id && typeof w.nombre === "string"))
+      // CORREGIDO: Verificar que los trabajadores tengan nombre (no 'name')
+      if (
+        !newWorkers.every(
+          (w) => w.id && typeof (w.nombre || w.name) === "string",
+        )
+      )
         throw new Error("Estructura incorrecta");
 
       await fetch(API_URL + "workers.php", { method: "DELETE" });
@@ -627,11 +640,14 @@ function importWorkersFromJSON(file) {
         await fetch(API_URL + "workers.php", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ id: w.id, nombre: w.nombre }),
+          body: JSON.stringify({
+            id: w.id,
+            nombre: w.nombre || w.name, // Soporta ambos formatos
+          }),
         });
       }
 
-      workers = newWorkers;
+      workers = newWorkers.map((w) => ({ ...w, nombre: w.nombre || w.name }));
       guards = [];
       lastWorkerIndexForDays = 0;
       await saveData();
@@ -1697,6 +1713,7 @@ function exportToJSON() {
   URL.revokeObjectURL(a.href);
 }
 
+// CORREGIDO: Importar datos completos desde JSON
 function importFromJSON(file) {
   if (!isAdmin()) return alert("No tienes permisos.");
   const reader = new FileReader();
@@ -1710,24 +1727,29 @@ function importFromJSON(file) {
       await fetch(API_URL + "guards.php", { method: "DELETE" });
       await fetch(API_URL + "days.php", { method: "DELETE" });
 
+      // CORREGIDO: Usar 'nombre' en lugar de 'name'
       for (const w of data.workers) {
         await fetch(API_URL + "workers.php", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ id: w.id, nombre: w.nombre }),
+          body: JSON.stringify({
+            id: w.id,
+            nombre: w.nombre || w.name,
+          }),
         });
       }
 
+      // CORREGIDO: Usar 'fecha', 'worker_id', 'completada', 'notas'
       for (const g of data.guards) {
         await fetch(API_URL + "guards.php", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            fecha: g.fecha,
-            worker_id: g.worker_id,
-            completada: g.completada ? 1 : 0,
+            fecha: g.fecha || g.date,
+            worker_id: g.worker_id || g.workerId,
+            completada: g.completada || g.completed ? 1 : 0,
             catedra: g.catedra || "",
-            notas: g.notas || "",
+            notas: g.notas || g.notes || "",
           }),
         });
       }
@@ -1957,8 +1979,8 @@ async function updateUserField(id, field, value) {
 }
 
 // ---------- MENSAJES ----------
-let currentMessageTab = "inbox"; // 'inbox' o 'sent'
-let selectedUsers = []; // para recordar selecciones en el masivo
+let currentMessageTab = "inbox";
+let selectedUsers = [];
 
 async function loadMessages() {
   const tbody = document.getElementById("messagesTableBody");
