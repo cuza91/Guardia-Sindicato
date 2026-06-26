@@ -1,322 +1,400 @@
 {
   "workers": [
     {
-      "id": 1781469978315,
-      "name": "Miguel Noa Cuza"
-    },
-    {
-      "id": 1781469978316,
-      "name": "René Mustelier Cuevas"
-    },
-    {
-      "id": 1781469978317,
-      "name": "Kenia Pérez Téllez"
-    },
-    {
-      "id": 1781469978318,
-      "name": "Bertha Libertad Emasabe Fuentes"
-    },
-    {
-      "id": 1781469978319,
-      "name": "María Caridad Pérez Martinó"
-    },
-    {
-      "id": 1781469978320,
-      "name": "Milaidys Pérez Vedey"
-    },
-    {
-      "id": 1781469978322,
-      "name": "Arael Padró Caldentey"
-    },
-    {
-      "id": 1781469978323,
-      "name": "Sandy Sánchez Domínguez"
-    },
-    {
-      "id": 1781469978324,
-      "name": "Raizi Chaveco Clavel"
-    },
-    {
-      "id": 1781469978325,
-      "name": "Magalis Rengifo Guillot"
-    },
-    {
-      "id": 1781469978326,
-      "name": "Rafael Pozo Pozo"
-    },
-    {
-      "id": 1781469978327,
-      "name": "Yarisleidys Martínez Faure"
-    },
-    {
-      "id": 1781469978328,
-      "name": "Yexi Fernández Chacón"
-    },
-    {
-      "id": 1781469978329,
-      "name": "Rolando Palacios Ramírez"
-    },
-    {
-      "id": 1781469978330,
-      "name": "Yusleidi Sojo Drago"
-    },
-    {
-      "id": 1781469978331,
-      "name": "Marisel Acebo López"
-    },
-    {
-      "id": 1781469978332,
-      "name": "Ricardo Boza Rizo"
-    },
-    {
-      "id": 1781469978333,
-      "name": "Rosa Delia López Rico"
-    },
-    {
-      "id": 1781469978334,
-      "name": "Yanet Medina Frómeta"
-    },
-    {
-      "id": 1781469978335,
-      "name": "Vilma Ferrer Bardet"
-    },
-    {
-      "id": 1781469978336,
-      "name": "Tamara Ferrer Bardet"
-    },
-    {
-      "id": 1781469978337,
-      "name": "Giannia Benítez Alayo"
-    },
-    {
-      "id": 1781469978338,
-      "name": "Migdalia Temó Despaigne"
-    },
-    {
-      "id": 1781469978339,
-      "name": "Milagros Valiente García"
-    },
-    {
-      "id": 1781469978340,
-      "name": "Solineidys Montoya Badell"
-    },
-    {
-      "id": 1781469978341,
-      "name": "Lién Maine Casadesús"
-    },
-    {
-      "id": 1781469978342,
-      "name": "Ariana Veránez Quiala"
-    },
-    {
-      "id": 1781469978343,
-      "name": "Rodolfo Hernández Álvarez"
-    },
-    {
-      "id": 1781469978344,
-      "name": "Arnaldo Sanabria León"
+      "id": 1781469978353,
+      "nombre": "Ana Libia Ferrer Quezada",
+      "created_at": "2026-06-25 21:05:38"
     },
     {
       "id": 1781469978345,
-      "name": "Ángel M. Freyre Fonceca"
+      "nombre": "Ángel M. Freyre Fonceca",
+      "created_at": "2026-06-25 21:05:38"
     },
     {
-      "id": 1781469978346,
-      "name": "Daniel Garzón Ruiz"
+      "id": 1781469978322,
+      "nombre": "Arael Padró Caldentey",
+      "created_at": "2026-06-25 21:05:38"
     },
     {
-      "id": 1781469978347,
-      "name": "Roberto López Castro"
+      "id": 1781469978342,
+      "nombre": "Ariana Veránez Quiala",
+      "created_at": "2026-06-25 21:05:38"
     },
     {
-      "id": 1781469978348,
-      "name": "Juan Carlos Barrientos Barrientos"
-    },
-    {
-      "id": 1781469978349,
-      "name": "Ignacio Valiente Duharte"
+      "id": 1781469978344,
+      "nombre": "Arnaldo Sanabria León",
+      "created_at": "2026-06-25 21:05:38"
     },
     {
       "id": 1781469978350,
-      "name": "Arturo Vinent Rivera"
+      "nombre": "Arturo Vinent Rivera",
+      "created_at": "2026-06-25 21:05:38"
     },
     {
-      "id": 1781469978351,
-      "name": "Idarmis Romero Sánchez"
+      "id": 1781469978318,
+      "nombre": "Bertha Libertad Emasabe Fuentes",
+      "created_at": "2026-06-25 21:05:38"
     },
     {
-      "id": 1781469978352,
-      "name": "Yimelsis García Pérez"
-    },
-    {
-      "id": 1781469978353,
-      "name": "Ana Libia Ferrer Quezada"
-    },
-    {
-      "id": 1781469978354,
-      "name": "Yamirka Balanzó Coca"
-    },
-    {
-      "id": 1781469978355,
-      "name": "Melba Vivian Vázquez Hardy"
+      "id": 1781469978346,
+      "nombre": "Daniel Garzón Ruiz",
+      "created_at": "2026-06-25 21:05:38"
     },
     {
       "id": 1781469978356,
-      "name": "Dayamí Acosta Hernández"
-    },
-    {
-      "id": 1781469978357,
-      "name": "Jorge Arian Montero Isaac"
-    },
-    {
-      "id": 1781469978358,
-      "name": "Juaquín Campos R."
-    },
-    {
-      "id": 1781469978359,
-      "name": "Félix González Isaguirre"
-    },
-    {
-      "id": 1781469978360,
-      "name": "Lucía Arada Corría"
-    },
-    {
-      "id": 1781469978361,
-      "name": "José Correa Noriega"
-    },
-    {
-      "id": 1781469978362,
-      "name": "Esperanza Sánchez Luna"
-    },
-    {
-      "id": 1781469978363,
-      "name": "María C. Stevent Rosillo"
-    },
-    {
-      "id": 1781469978364,
-      "name": "Roberto Verdecia García"
-    },
-    {
-      "id": 1781469978365,
-      "name": "Jorge Luis Olivares Casas"
+      "nombre": "Dayamí Acosta Hernández",
+      "created_at": "2026-06-25 21:05:38"
     },
     {
       "id": 1781698703183,
-      "name": "Dorli Montoya"
+      "nombre": "Dorli Montoya",
+      "created_at": "2026-06-25 21:05:38"
+    },
+    {
+      "id": 1781469978362,
+      "nombre": "Esperanza Sánchez Luna",
+      "created_at": "2026-06-25 21:05:38"
+    },
+    {
+      "id": 1781469978359,
+      "nombre": "Félix González Isaguirre",
+      "created_at": "2026-06-25 21:05:38"
+    },
+    {
+      "id": 1781469978337,
+      "nombre": "Giannia Benítez Alayo",
+      "created_at": "2026-06-25 21:05:38"
+    },
+    {
+      "id": 1781469978351,
+      "nombre": "Idarmis Romero Sánchez",
+      "created_at": "2026-06-25 21:05:38"
+    },
+    {
+      "id": 1781469978349,
+      "nombre": "Ignacio Valiente Duharte",
+      "created_at": "2026-06-25 21:05:38"
+    },
+    {
+      "id": 1781469978357,
+      "nombre": "Jorge Arian Montero Isaac",
+      "created_at": "2026-06-25 21:05:38"
+    },
+    {
+      "id": 1781469978365,
+      "nombre": "Jorge Luis Olivares Casas",
+      "created_at": "2026-06-25 21:05:38"
+    },
+    {
+      "id": 1781469978361,
+      "nombre": "José Correa Noriega",
+      "created_at": "2026-06-25 21:05:39"
+    },
+    {
+      "id": 1781469978348,
+      "nombre": "Juan Carlos Barrientos Barrientos",
+      "created_at": "2026-06-25 21:05:39"
+    },
+    {
+      "id": 1781469978358,
+      "nombre": "Juaquín Campos R.",
+      "created_at": "2026-06-25 21:05:39"
+    },
+    {
+      "id": 1781469978317,
+      "nombre": "Kenia Pérez Téllez",
+      "created_at": "2026-06-25 21:05:39"
+    },
+    {
+      "id": 1781469978341,
+      "nombre": "Lién Maine Casadesús",
+      "created_at": "2026-06-25 21:05:39"
+    },
+    {
+      "id": 1781469978360,
+      "nombre": "Lucía Arada Corría",
+      "created_at": "2026-06-25 21:05:39"
+    },
+    {
+      "id": 1781469978325,
+      "nombre": "Magalis Rengifo Guillot",
+      "created_at": "2026-06-25 21:05:39"
+    },
+    {
+      "id": 1781469978363,
+      "nombre": "María C. Stevent Rosillo",
+      "created_at": "2026-06-25 21:05:39"
+    },
+    {
+      "id": 1781469978319,
+      "nombre": "María Caridad Pérez Martinó",
+      "created_at": "2026-06-25 21:05:39"
+    },
+    {
+      "id": 1781469978331,
+      "nombre": "Marisel Acebo López",
+      "created_at": "2026-06-25 21:05:39"
+    },
+    {
+      "id": 1781469978355,
+      "nombre": "Melba Vivian Vázquez Hardy",
+      "created_at": "2026-06-25 21:05:39"
+    },
+    {
+      "id": 1781469978338,
+      "nombre": "Migdalia Temó Despaigne",
+      "created_at": "2026-06-25 21:05:39"
+    },
+    {
+      "id": 1781469978315,
+      "nombre": "Miguel Noa Cuza",
+      "created_at": "2026-06-25 21:05:39"
+    },
+    {
+      "id": 1781469978339,
+      "nombre": "Milagros Valiente García",
+      "created_at": "2026-06-25 21:05:39"
+    },
+    {
+      "id": 1781469978320,
+      "nombre": "Milaidys Pérez Vedey",
+      "created_at": "2026-06-25 21:05:39"
+    },
+    {
+      "id": 1781469978326,
+      "nombre": "Rafael Pozo Pozo",
+      "created_at": "2026-06-25 21:05:39"
+    },
+    {
+      "id": 1781469978324,
+      "nombre": "Raizi Chaveco Clavel",
+      "created_at": "2026-06-25 21:05:39"
+    },
+    {
+      "id": 1781469978316,
+      "nombre": "René Mustelier Cuevas",
+      "created_at": "2026-06-25 21:05:39"
+    },
+    {
+      "id": 1781469978332,
+      "nombre": "Ricardo Boza Rizo",
+      "created_at": "2026-06-25 21:05:39"
+    },
+    {
+      "id": 1781469978347,
+      "nombre": "Roberto López Castro",
+      "created_at": "2026-06-25 21:05:39"
+    },
+    {
+      "id": 1781469978364,
+      "nombre": "Roberto Verdecia García",
+      "created_at": "2026-06-25 21:05:39"
+    },
+    {
+      "id": 1781469978343,
+      "nombre": "Rodolfo Hernández Álvarez",
+      "created_at": "2026-06-25 21:05:39"
+    },
+    {
+      "id": 1781469978329,
+      "nombre": "Rolando Palacios Ramírez",
+      "created_at": "2026-06-25 21:05:39"
+    },
+    {
+      "id": 1781469978333,
+      "nombre": "Rosa Delia López Rico",
+      "created_at": "2026-06-25 21:05:39"
+    },
+    {
+      "id": 1781469978323,
+      "nombre": "Sandy Sánchez Domínguez",
+      "created_at": "2026-06-25 21:05:39"
+    },
+    {
+      "id": 1781469978340,
+      "nombre": "Solineidys Montoya Badell",
+      "created_at": "2026-06-25 21:05:40"
+    },
+    {
+      "id": 1781469978336,
+      "nombre": "Tamara Ferrer Bardet",
+      "created_at": "2026-06-25 21:05:40"
+    },
+    {
+      "id": 1781469978335,
+      "nombre": "Vilma Ferrer Bardet",
+      "created_at": "2026-06-25 21:05:40"
+    },
+    {
+      "id": 1781469978354,
+      "nombre": "Yamirka Balanzó Coca",
+      "created_at": "2026-06-25 21:05:40"
+    },
+    {
+      "id": 1781469978334,
+      "nombre": "Yanet Medina Frómeta",
+      "created_at": "2026-06-25 21:05:40"
     },
     {
       "id": 1781698865579,
-      "name": "Yania Verdecia Acosta"
+      "nombre": "Yania Verdecia Acosta",
+      "created_at": "2026-06-25 21:05:40"
+    },
+    {
+      "id": 1781469978327,
+      "nombre": "Yarisleidys Martínez Faure",
+      "created_at": "2026-06-25 21:05:40"
+    },
+    {
+      "id": 1781469978328,
+      "nombre": "Yexi Fernández Chacón",
+      "created_at": "2026-06-25 21:05:40"
+    },
+    {
+      "id": 1781469978352,
+      "nombre": "Yimelsis García Pérez",
+      "created_at": "2026-06-25 21:05:40"
+    },
+    {
+      "id": 1781469978330,
+      "nombre": "Yusleidi Sojo Drago",
+      "created_at": "2026-06-25 21:05:40"
     }
   ],
   "guards": [
     {
-      "id": 22,
-      "date": "2026-01-03",
-      "workerId": 1781469978315,
-      "completed": true,
+      "id": 129,
+      "fecha": "2026-01-03",
+      "worker_id": 1781469978315,
+      "completada": 1,
       "catedra": "COM",
-      "notes": "Guardia de 24 horas"
+      "notas": "Guardia de 24 horas",
+      "created_at": "2026-06-25 21:05:40",
+      "updated_at": "2026-06-25 21:05:40"
     },
     {
-      "id": 11,
-      "date": "2026-06-02",
-      "workerId": 1781469978334,
-      "completed": true,
+      "id": 130,
+      "fecha": "2026-06-02",
+      "worker_id": 1781469978334,
+      "completada": 1,
       "catedra": "Idiomas",
-      "notes": ""
+      "notas": "",
+      "created_at": "2026-06-25 21:05:40",
+      "updated_at": "2026-06-25 21:05:40"
     },
     {
-      "id": 12,
-      "date": "2026-06-04",
-      "workerId": 1781469978351,
-      "completed": true,
+      "id": 131,
+      "fecha": "2026-06-04",
+      "worker_id": 1781469978351,
+      "completada": 1,
       "catedra": "FPT",
-      "notes": ""
+      "notas": "",
+      "created_at": "2026-06-25 21:05:40",
+      "updated_at": "2026-06-25 21:05:40"
     },
     {
-      "id": 13,
-      "date": "2026-06-09",
-      "workerId": 1781469978328,
-      "completed": true,
+      "id": 132,
+      "fecha": "2026-06-09",
+      "worker_id": 1781469978328,
+      "completada": 1,
       "catedra": "FQ",
-      "notes": ""
+      "notas": "",
+      "created_at": "2026-06-25 21:05:40",
+      "updated_at": "2026-06-25 21:05:40"
     },
     {
-      "id": 14,
-      "date": "2026-06-11",
-      "workerId": 1781469978338,
-      "completed": true,
+      "id": 133,
+      "fecha": "2026-06-11",
+      "worker_id": 1781469978338,
+      "completada": 1,
       "catedra": "Idiomas",
-      "notes": ""
+      "notas": "",
+      "created_at": "2026-06-25 21:05:40",
+      "updated_at": "2026-06-25 21:05:40"
     },
     {
-      "id": 15,
-      "date": "2026-06-15",
-      "workerId": 1781469978319,
-      "completed": true,
+      "id": 134,
+      "fecha": "2026-06-15",
+      "worker_id": 1781469978319,
+      "completada": 1,
       "catedra": "MAT",
-      "notes": ""
+      "notas": "",
+      "created_at": "2026-06-25 21:05:40",
+      "updated_at": "2026-06-25 21:05:40"
     },
     {
-      "id": 16,
-      "date": "2026-06-16",
-      "workerId": 1781469978315,
-      "completed": true,
+      "id": 135,
+      "fecha": "2026-06-16",
+      "worker_id": 1781469978315,
+      "completada": 1,
       "catedra": "COM",
-      "notes": ""
+      "notas": "",
+      "created_at": "2026-06-25 21:05:40",
+      "updated_at": "2026-06-25 21:05:40"
     },
     {
-      "id": 17,
-      "date": "2026-06-18",
-      "workerId": 1781469978348,
-      "completed": true,
+      "id": 136,
+      "fecha": "2026-06-18",
+      "worker_id": 1781469978348,
+      "completada": 1,
       "catedra": "FPT",
-      "notes": ""
+      "notas": "",
+      "created_at": "2026-06-25 21:05:40",
+      "updated_at": "2026-06-25 21:05:40"
     },
     {
-      "id": 18,
-      "date": "2026-06-22",
-      "workerId": 1781698703183,
-      "completed": false,
+      "id": 137,
+      "fecha": "2026-06-22",
+      "worker_id": 1781698703183,
+      "completada": 1,
       "catedra": "Idiomas",
-      "notes": "Verificar Nombre"
+      "notas": "Verificar Nombre",
+      "created_at": "2026-06-25 21:05:40",
+      "updated_at": "2026-06-25 21:05:40"
     },
     {
-      "id": 19,
-      "date": "2026-06-24",
-      "workerId": 1781698865579,
-      "completed": false,
+      "id": 138,
+      "fecha": "2026-06-24",
+      "worker_id": 1781698865579,
+      "completada": 1,
       "catedra": "FQ",
-      "notes": ""
+      "notas": "",
+      "created_at": "2026-06-25 21:05:40",
+      "updated_at": "2026-06-25 21:05:40"
     },
     {
-      "id": 20,
-      "date": "2026-06-25",
-      "workerId": 1781469978317,
-      "completed": false,
+      "id": 139,
+      "fecha": "2026-06-25",
+      "worker_id": 1781469978317,
+      "completada": 1,
       "catedra": "MAT",
-      "notes": ""
+      "notas": "",
+      "created_at": "2026-06-25 21:05:41",
+      "updated_at": "2026-06-25 21:05:41"
     },
     {
-      "id": 21,
-      "date": "2026-06-29",
-      "workerId": 1781469978349,
-      "completed": false,
+      "id": 140,
+      "fecha": "2026-06-29",
+      "worker_id": 1781469978349,
+      "completada": 0,
       "catedra": "FPT",
-      "notes": ""
+      "notas": "",
+      "created_at": "2026-06-25 21:05:41",
+      "updated_at": "2026-06-25 21:05:41"
     },
     {
-      "id": 24,
-      "date": "2026-06-30",
-      "workerId": 1781469978357,
-      "completed": false,
+      "id": 141,
+      "fecha": "2026-06-30",
+      "worker_id": 1781469978357,
+      "completada": 0,
       "catedra": "COM",
-      "notes": ""
+      "notas": "",
+      "created_at": "2026-06-25 21:05:41",
+      "updated_at": "2026-06-25 21:05:41"
     }
   ],
   "guardDays": [],
   "currentYear": 2026,
   "lastWorkerIndexForDays": 0,
-  "exportDate": "2026-06-20T11:53:35.229Z"
+  "exportDate": "2026-06-26T15:16:03.851Z"
 }
