@@ -1714,7 +1714,7 @@ function importFromJSON(file) {
         await fetch(API_URL + "workers.php", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ id: w.id, nombre: w.name }),
+          body: JSON.stringify({ id: w.id, nombre: w.nombre }),
         });
       }
 
@@ -1723,11 +1723,11 @@ function importFromJSON(file) {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            fecha: g.date,
-            worker_id: g.workerId,
-            completada: g.completed ? 1 : 0,
+            fecha: g.fecha,
+            worker_id: g.worker_id,
+            completada: g.completada ? 1 : 0,
             catedra: g.catedra || "",
-            notas: g.notes || "",
+            notas: g.notas || "",
           }),
         });
       }
